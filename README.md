@@ -14,5 +14,5 @@ This repository is the back end of the blog project, based on
 - MySQL
 - ElasticSearch
 
-# links
+# Links
 [Front end of this project (using vue)](https://github.com/ProjectFK/Blog-Frontend)
