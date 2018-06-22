@@ -18,7 +18,7 @@
 
 ### NetBeans ###
 /nbproject/private/
-/build/
+/parser/
 /nbbuild/
 /dist/
 /nbdist/
@@ -50,3 +50,4 @@ hs_err_pid*
 
 ### secrets ###
 src/main/java/org/projectfk/blog/configurations/secrets/
+resources/display
