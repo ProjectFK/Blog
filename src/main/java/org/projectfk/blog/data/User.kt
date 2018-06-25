@@ -1,29 +1,52 @@
 package org.projectfk.blog.data
 
-import org.hibernate.annotations.Type
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import org.projectfk.blog.common.IllegalParametersException
+import org.projectfk.blog.services.UserService
+import org.springframework.stereotype.Component
 import java.io.Serializable
 import javax.persistence.*
 
+@Component
 @Entity(name = "User")
 class User : Serializable{
 
-    constructor(name: String, email: String) {
-        if (name.length > 20) {
-            throw IllegalArgumentException("the name should be shorter than 20 characters")
-        }
+    internal constructor(
+            name: String
+    ) {
         this.name = name
-        this.email = email
     }
 
-    @Column(length = 20)
+//    JPA
+    constructor() {
+        this.name = "_"
+    }
+
+    @Column(length = 20, nullable = false)
     var name: String
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0
+    @Column(nullable = false)
+    val id: Int = 0
 
-    @Column
-    @Type(type = "text")
-    val email: String
+    override fun toString(): String {
+        return "User(name='$name', id=$id')"
+    }
+    
+    companion object {
+
+        @JsonCreator
+        fun JsonFactoryEntry(
+                @JsonProperty("id") id: Int
+        ): User {
+            if (id < 0) throw IllegalParametersException("invalid id")
+            return UserService.UserService.findByID(id).orElseThrow {
+                IllegalParametersException("there's no such spamUser with id $id in database")
+            }
+        }
+
+    }
 
 }

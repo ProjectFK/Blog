@@ -1,7 +1,18 @@
 package org.projectfk.blog.blogformat
 
-enum class BlogFormat(val formatName: String, val contentExchanger: ContentToHTMLExchanger) {
+import org.projectfk.blog.blogformat.converters.MarkdownToHTMLExchanger
+import org.projectfk.blog.blogformat.converters.MarkdownToPlainTextExchanger
+import org.projectfk.blog.blogformat.converters.PlainTextToHtmlExchanger
 
-    MARKDOWN("markdown", MarkdownToHTMLExchanger()), PLAIN_TEXT("text", PlainTextToHtmlExchanger());
+enum class BlogFormat(
+        val formatName: String,
+        val htmlExchanger: ContentToHTMLExchanger,
+        val plainTextExchanger: ContentToPlainTextExchanger
+) {
+
+    MARKDOWN("markdown", MarkdownToHTMLExchanger, object : ContentToPlainTextExchanger {
+        override fun toPlainText(raw: String): String = raw
+    }),
+    PLAIN_TEXT("text", PlainTextToHtmlExchanger, MarkdownToPlainTextExchanger)
 
 }

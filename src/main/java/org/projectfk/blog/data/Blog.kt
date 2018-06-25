@@ -14,9 +14,10 @@ class Blog(postName: String, content: String,
            val format: BlogFormat) : Serializable {
 
 //   JPA
-    protected constructor() : this("", "", User("", ""), BlogFormat.PLAIN_TEXT)
+    constructor() : this("", "", User(), BlogFormat.PLAIN_TEXT)
 
     @Id
+    @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private val id: Long = 0
 
@@ -44,4 +45,10 @@ class Blog(postName: String, content: String,
     private fun refreshModifyDate() {
         modifyDate = LocalDateTime.now()
     }
+
+    override fun toString(): String {
+        return "Blog(author=$author, format=$format, id=$id, postName='$postName', rawContent='$rawContent', createDate=$createDate, modifyDate=$modifyDate)"
+    }
+
+
 }

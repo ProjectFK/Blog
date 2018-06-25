@@ -1,7 +1,7 @@
 package org.projectfk.blog.blogformat
 
-interface ContentToHTMLExchanger {
+interface ContentToHTMLExchanger{
 
-    fun exchangeToHTML(raw: String): String
+    fun toHtml(raw: String): String
 
 }

@@ -13,7 +13,6 @@ public class BlogApplication implements WebMvcConfigurer {
 		SpringApplication.run(BlogApplication.class, args);
 	}
 
-
 	/**
 	 * Set default rawContent type as Json
 	 */
@@ -21,6 +20,13 @@ public class BlogApplication implements WebMvcConfigurer {
 	public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
 		configurer.defaultContentType(MediaType.APPLICATION_JSON);
 	}
+
+//	@Bean
+//	public ObjectMapper defaultJacksonConfig() {
+//		return new ObjectMapper()
+//				.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+//				.setDateFormat(DateTimeFormatter.ISO_)
+//	}
 
 
 }

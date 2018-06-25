@@ -1,0 +1,11 @@
+.showB {
+    border-style: dotted;
+}
+
+* {
+    text-align: center;
+}
+
+h2 {
+    display: inline-block;
+}

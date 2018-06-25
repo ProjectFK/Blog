@@ -4,4 +4,8 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PostRepo : CrudRepository<Blog, Long>
+interface PostRepo : CrudRepository<Blog, Long> {
+
+    fun findByAuthor(user: User) : Iterable<Blog>
+
+}
