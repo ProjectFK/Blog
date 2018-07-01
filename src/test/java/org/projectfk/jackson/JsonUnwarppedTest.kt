@@ -1,4 +1,4 @@
-package org.projectfk
+package org.projectfk.jackson
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped

@@ -1,16 +1,17 @@
 package org.projectfk.blog.controller
 
 import org.projectfk.blog.blogformat.BlogFormat
+import org.projectfk.blog.common.IllegalParametersException
 import org.projectfk.blog.common.KnownException
+import org.projectfk.blog.common.NotFoundException
 import org.projectfk.blog.common.ResultBean
-import org.projectfk.blog.common.State
-import org.projectfk.blog.common.StateResultBean
 import org.projectfk.blog.data.Blog
 import org.projectfk.blog.services.BlogService
 import org.projectfk.blog.services.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
 @RestController
@@ -25,11 +26,16 @@ class BlogController {
     
     val integer = AtomicInteger(0)
 
-    @GetMapping
+    @GetMapping()
     fun getAll(): ResultBean<List<Blog>> = ResultBean(blogService.listAllBlogs())
 
     @GetMapping("/{id}")
-    fun getByID(@PathVariable("id") id:Int): ResultBean<Blog?> = ResultBean(blogService.blogByID(id.toLong()).orElse(null))
+    fun getByID(@PathVariable("id") id:Int): ResultBean<Blog> {
+        if (id <= 0) throw IllegalParametersException("id should not be smaller than 0 or equals 1")
+        val result = blogService.blogByID(id)
+        if (result.isPresent) return ResultBean(result.get())
+        else throw NotFoundException()
+    }
 
     @GetMapping("/exception")
     fun exception(): Nothing = throw KnownException("Here's your error")
@@ -48,12 +54,12 @@ class BlogController {
     fun createBlog(
             @RequestBody
             postBody: Blog
-    ): ResponseEntity<StateResultBean> {
-        TODO("IMPLANTATION NOT APPLIED")
-        return ResponseEntity.ok(StateResultBean(State.ErrorState))
+    ): ResponseEntity<ResultBean<Blog>> {
+        val result = blogService.createBlog { postBody }
+        return ResponseEntity
+                .created(URI.create("/blog/${result.id}"))
+                .body(ResultBean(result))
     }
 
-    @ExceptionHandler((KnownException::class))
-    fun knownExceptionHandler(exception: KnownException): StateResultBean = StateResultBean(State.ExceptionState(exception))
 
 }

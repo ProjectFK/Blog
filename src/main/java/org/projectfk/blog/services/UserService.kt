@@ -18,8 +18,7 @@ class UserService {
         UserService = this;
     }
 
-    private constructor(any: Any?){
-    }
+    private constructor(any: Any?)
 
     fun findByID(id: Int): Optional<User> = userRepo.findById(id)
 
@@ -31,7 +30,7 @@ class UserService {
         if (name.length > 20 || name.isEmpty() || name == "_")
             throw IllegalArgumentException(
                     "the name should be shorter than 20 characters and bigger than 1 character and not a \"_\"; " +
-                            "name given: $name"
+                            "name qgiven: $name"
             )
         val user = User(name)
         saveUser(user)
@@ -40,7 +39,7 @@ class UserService {
 
     companion object {
 
-        internal var UserService: UserService = UserService(null)
+        lateinit internal var UserService: UserService
 
     }
 

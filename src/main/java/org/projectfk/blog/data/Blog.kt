@@ -1,5 +1,9 @@
 package org.projectfk.blog.data
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import org.projectfk.blog.blogformat.BlogFormat
 import java.io.Serializable
 import java.time.LocalDateTime
@@ -7,38 +11,66 @@ import javax.persistence.*
 
 @Entity(name = "Blog")
 class Blog(postName: String, content: String,
-           @Column(nullable = false)
-           val author: User,
-           @Column(nullable = false)
-           @Enumerated(EnumType.STRING)
-           val format: BlogFormat) : Serializable {
+           author: User,
+           format: BlogFormat) : Serializable {
 
 //   JPA
+    @JsonCreator(mode = JsonCreator.Mode.DISABLED)
     constructor() : this("", "", User(), BlogFormat.PLAIN_TEXT)
 
     @Id
     @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Long = 0
+
+    @JacksonXmlProperty(isAttribute = true)
+    @JsonProperty(access = READ_ONLY)
+    val id: Int = 0
+
+
 
     @Column(nullable = false)
-    var postName: String = postName
+
+    @JsonProperty
+    val author = author
+
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+
+    @JsonProperty
+    val format = format
+
+
+    @Column(nullable = false)
+
+    @JsonProperty("title")
+    var postTitle: String = postName
         set(value) {
             field = value
             refreshModifyDate()
         }
 
+
     @Column(nullable = false)
+
+    @JsonProperty
     var rawContent: String = content
         set(value) {
             field = value
             refreshModifyDate()
         }
 
-    @Column(nullable = false)
-    val createDate: LocalDateTime = LocalDateTime.now()
 
     @Column(nullable = false)
+
+    @JsonProperty(access = READ_ONLY)
+    val createDate: LocalDateTime = LocalDateTime.now()
+
+
+    @Column(nullable = false)
+
+//    JsonIgnore performs buggy on kotlin
+    @JsonProperty(access = READ_ONLY)
     var modifyDate: LocalDateTime = LocalDateTime.now()
         private set
 
@@ -46,9 +78,19 @@ class Blog(postName: String, content: String,
         modifyDate = LocalDateTime.now()
     }
 
-    override fun toString(): String {
-        return "Blog(author=$author, format=$format, id=$id, postName='$postName', rawContent='$rawContent', createDate=$createDate, modifyDate=$modifyDate)"
-    }
+    override fun toString(): String =
+            "Blog(author=$author, format=$format, id=$id, postTitle='$postTitle', rawContentLength='${rawContent.length}', createDate=$createDate, modifyDate=$modifyDate)"
 
+    companion object {
+
+        @JsonCreator
+        @JvmStatic
+        fun jsonEntry(
+                @JsonProperty("id", required = true)
+                id: Int): Blog {
+            TODO()
+        }
+
+    }
 
 }
