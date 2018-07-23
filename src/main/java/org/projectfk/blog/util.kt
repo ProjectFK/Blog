@@ -28,3 +28,8 @@ class CreatedResponseBody<T> internal constructor(
             )
 
 }
+
+fun fasterStringCompare(one: String, another: String): Boolean {
+    if (one.length != another.length) return false
+    return one.hashCode() == another.hashCode()
+}

@@ -1,6 +1,7 @@
 package org.projectfk.blog.data
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import org.projectfk.blog.common.IllegalParametersException
@@ -11,7 +12,7 @@ import javax.persistence.*
 
 @Component
 @Entity(name = "User")
-class User : Serializable{
+class User : Serializable {
 
     internal constructor(
             name: String
@@ -34,24 +35,21 @@ class User : Serializable{
     @Column(nullable = false)
 
     @JacksonXmlProperty(isAttribute = true)
+    @JsonIgnoreProperties(allowGetters = true)
     val id: Int = 0
 
     override fun toString(): String {
         return "User(name='$name', id=$id')"
     }
-    
-    companion object {
 
-        @JsonCreator
-        fun JsonFactoryEntry(
-                @JsonProperty("id") id: Int
-        ): User {
-            if (id < 0) throw IllegalParametersException("invalid id")
-            return UserService.UserService.findByID(id).orElseThrow {
-                IllegalParametersException("there's no such user with id: $id in database")
-            }
+    @JsonCreator
+    fun JsonIDEntry(
+            @JsonProperty("id") id: Int
+    ): User {
+        if (id < 0) throw IllegalParametersException("invalid id")
+        return UserService.UserService.findByID(id).orElseThrow {
+            IllegalParametersException("there's no such user with id: $id in database")
         }
-
     }
 
 }

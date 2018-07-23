@@ -14,11 +14,9 @@ class UserService {
     @Autowired
     private lateinit var userRepo: UserRepo
 
-    constructor() {
-        UserService = this;
+    init {
+        UserService = this
     }
-
-    private constructor(any: Any?)
 
     fun findByID(id: Int): Optional<User> = userRepo.findById(id)
 
@@ -30,7 +28,7 @@ class UserService {
         if (name.length > 20 || name.isEmpty() || name == "_")
             throw IllegalArgumentException(
                     "the name should be shorter than 20 characters and bigger than 1 character and not a \"_\"; " +
-                            "name qgiven: $name"
+                            "name given: $name"
             )
         val user = User(name)
         saveUser(user)
@@ -39,7 +37,10 @@ class UserService {
 
     companion object {
 
-        lateinit internal var UserService: UserService
+        /**
+         * Expose for Jackson User Deserialize Entry
+         */
+        internal lateinit var UserService: UserService
 
     }
 

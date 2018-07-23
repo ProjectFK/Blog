@@ -30,7 +30,6 @@ open class ResultBean<T> (
     @JsonProperty
     val state = state
 
-
 }
 
 class StateResultBean(state: State) : ResultBean<State>(null, state = state) {

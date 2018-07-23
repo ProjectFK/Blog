@@ -21,7 +21,7 @@ class JsonCreatorTest {
         companion object {
             val instance = stru()
 
-//           That's why!!!!!!!!!!!
+//           Jvm Static !!! That's why!!!!!!!!!!!
             @JvmStatic
             @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
             fun jsonEntry(

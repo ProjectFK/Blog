@@ -71,8 +71,8 @@ public  class Vaptcha {
                 //判断宕机
                 if (getIsDown()) {
                     //进入宕机模式
-                    lastCheckDownTime = now;
-                    isDown = true;
+                    //lastCheckDownTime = now;
+                    //isDown = true;
                     passedSignatures = new ArrayList<String>();
                 }
                 return getDownTimeCaptcha();

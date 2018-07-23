@@ -21,12 +21,4 @@ public class BlogApplication implements WebMvcConfigurer {
 		configurer.defaultContentType(MediaType.APPLICATION_JSON);
 	}
 
-//	@Bean
-//	public ObjectMapper defaultJacksonConfig() {
-//		return new ObjectMapper()
-//				.setSerializationInclusion(JsonInclude.Include.NON_NULL)
-//				.setDateFormat(DateTimeFormatter.ISO_)
-//	}
-
-
 }
