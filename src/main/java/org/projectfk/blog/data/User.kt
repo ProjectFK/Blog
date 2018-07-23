@@ -2,7 +2,6 @@ package org.projectfk.blog.data
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import org.projectfk.blog.common.IllegalParametersException
 import org.projectfk.blog.services.UserService
@@ -42,14 +41,20 @@ class User : Serializable {
         return "User(name='$name', id=$id')"
     }
 
-    @JsonCreator
-    fun JsonIDEntry(
-            @JsonProperty("id") id: Int
-    ): User {
-        if (id < 0) throw IllegalParametersException("invalid id")
-        return UserService.UserService.findByID(id).orElseThrow {
-            IllegalParametersException("there's no such user with id: $id in database")
+    companion object {
+
+        @JvmStatic
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        fun JsonIDEntry(
+                id: Int
+        ): User {
+            if (id < 0) throw IllegalParametersException("invalid id")
+            return UserService.UserService.findByID(id).orElseThrow {
+                IllegalParametersException("there's no such user with id: $id in database")
+            }
         }
+
+
     }
 
 }

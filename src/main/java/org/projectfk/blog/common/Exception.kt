@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 
 open class KnownException(msg: String) : Exception(msg)
 
-@ResponseStatus(HttpStatus.FORBIDDEN)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
 class IllegalParametersException(msg: String) : KnownException(msg)
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
