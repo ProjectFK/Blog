@@ -13,6 +13,7 @@ import javax.persistence.*
 @Entity(name = "User")
 class User : Serializable {
 
+    @JsonCreator(mode = JsonCreator.Mode.DISABLED)
     internal constructor(
             name: String
     ) {

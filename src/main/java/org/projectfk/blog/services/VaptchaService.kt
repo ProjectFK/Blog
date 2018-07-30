@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture
 
 @Service
 open class VaptchaService(
-//        this two object is passed from configurations.secrets.VaptchaConfig
+//        this two strings are passed from configurations.secrets.VaptchaConfig
         @Autowired
         val vaptcha: Vaptcha,
         @Autowired

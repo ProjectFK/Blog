@@ -19,7 +19,6 @@ class CreatedResponseBody<T> internal constructor(
         val url: URI
 ) {
 
-    //    Why Any is Any? though
     @JsonAnyGetter
     fun jsonEntry(): Map<String, Any?> =
             mapOf(
