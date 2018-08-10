@@ -12,8 +12,11 @@ open class SecurityConfig : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
         http
                 .authorizeRequests()
-                    .anyRequest().authenticated()
+                    .anyRequest().anonymous()
                 .and()
-                .oauth2Login()
+                .formLogin()
+                    .loginPage("/user/login")
+                .and()
+                .csrf().disable()
     }
 }

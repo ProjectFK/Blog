@@ -114,7 +114,8 @@ public class Blog {
 			@JsonProperty("content")
 					String content,
 			@JsonProperty("title")
-					String title) {
+					String title
+	) {
 		LocalDateTime now = now();
 		return new Blog(author, title, content, now, now);
 	}

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 import java.net.URI
 
 @RestController
-@RequestMapping("/user/")
+@RequestMapping("api/user/")
 class UserController {
 
     @Autowired
@@ -19,7 +19,8 @@ class UserController {
     @GetMapping("{id}")
     fun getUser(
             @PathVariable("id")
-            id: Int): ResultBean<User> = ResultBean(userService.findByID(id).orElseThrow(::NotFoundException))
+            id: Int
+    ): ResultBean<User> = ResultBean(userService.findByID(id).orElseThrow(::NotFoundException))
 
     @PostMapping("registry")
     fun createUser(@RequestParam("name") name: String): ResponseEntity<User> {
@@ -27,4 +28,8 @@ class UserController {
         return ResponseEntity.created(URI.create("/user/${created.id}")).body(created)
     }
     
+}
+
+class RichUserInformation {
+
 }
