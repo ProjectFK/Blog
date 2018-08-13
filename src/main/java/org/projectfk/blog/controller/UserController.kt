@@ -24,12 +24,15 @@ class UserController {
 
     @PostMapping("registry")
     fun createUser(@RequestParam("name") name: String): ResponseEntity<User> {
-        val created = userService.registryNewUser(name)
+        val created = userService.registryNewUser(name, "")
         return ResponseEntity.created(URI.create("/user/${created.id}")).body(created)
     }
     
 }
 
-class RichUserInformation {
-
-}
+class UserAuthorizationDTO(
+        val name: String,
+        val password: String,
+        val recaptcha_token: String,
+        val time: Long
+)
