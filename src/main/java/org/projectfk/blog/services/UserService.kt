@@ -33,8 +33,7 @@ class UserService : UserDetailsService {
 
     override fun loadUserByUsername(username: String): User {
         logger.debugIfEnable { "loading user with user name: $username" }
-//        val users = userRepo.findByUsername(username).toList()
-        val users = emptyList<User>()
+        val users = userRepo.findByUsername(username).toList()
         if (users.isEmpty()) {
             val notFoundException = UsernameNotFoundException("User with username: $username do not exists")
             logger.debugIfEnable(notFoundException) { "user $username do not found" }
@@ -46,7 +45,7 @@ class UserService : UserDetailsService {
             logger.fatal(message, assertionError)
             throw assertionError
         }
-        return users[1]
+        return users[0]
     }
 
     fun registryNewUser(name: String, password: String): User {

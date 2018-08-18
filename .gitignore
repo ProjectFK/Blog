@@ -50,3 +50,4 @@ hs_err_pid*
 
 ### secrets ###
 recaptcha_config.properties
+database-config.properties

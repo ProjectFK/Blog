@@ -4,6 +4,6 @@ import org.springframework.data.repository.CrudRepository
 
 interface UserRepo : CrudRepository<User, Int> {
 
-//    fun findByUsername(name: String): Iterable<User>
+    fun findByUsername(name: String): Iterable<User>
 
 }
