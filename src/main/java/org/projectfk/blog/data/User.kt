@@ -18,6 +18,7 @@ import javax.persistence.*
 @Entity(name = "User")
 @Table(name = "user")
 class User : Serializable, UserDetails {
+
     @JsonCreator(mode = JsonCreator.Mode.DISABLED)
     internal constructor(
             name: String,
@@ -77,8 +78,8 @@ class User : Serializable, UserDetails {
     override fun toString(): String = "User(name='$username', id=$id')"
 
     override fun equals(other: Any?): Boolean {
-        if (other == this) return true
-        if (!(other is User)) return false
+        if (other === this) return true
+        if (other !is User) return false
         if (other.id != 0) return this.id == other.id
         return this.username == other.username
     }

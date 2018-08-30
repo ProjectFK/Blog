@@ -8,4 +8,6 @@ interface PostRepo : CrudRepository<Blog, Int> {
 
     fun findByAuthor(user: User) : Iterable<Blog>
 
+    fun findAllByOrderByModifyDateDesc(): List<Blog>
+
 }

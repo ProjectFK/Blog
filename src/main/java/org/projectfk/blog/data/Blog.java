@@ -2,6 +2,8 @@ package org.projectfk.blog.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
 import org.projectfk.blog.common.NotFoundException;
 import org.projectfk.blog.services.BlogService;
@@ -51,11 +53,11 @@ public class Blog {
 	private String content;
 
 	@JsonProperty(access = READ_ONLY)
-	@Column(columnDefinition = "TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP")
+	@UpdateTimestamp
 	private LocalDateTime modifyDate = LocalDateTime.now();
 
 	@JsonProperty(access = READ_ONLY)
-	@Column(nullable = false)
+	@CreationTimestamp
 	private LocalDateTime createdDate = LocalDateTime.now();
 
 	public int getId() {
