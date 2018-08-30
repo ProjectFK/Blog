@@ -1,8 +1,6 @@
 package org.projectfk.blog.controller
 
-import org.projectfk.blog.common.IllegalParametersException
-import org.projectfk.blog.common.NotFoundException
-import org.projectfk.blog.common.ResultBean
+import org.projectfk.blog.common.*
 import org.projectfk.blog.data.Blog
 import org.projectfk.blog.data.User
 import org.projectfk.blog.services.BlogService
@@ -39,12 +37,15 @@ class BlogController {
     fun createBlog(
             @RequestBody
             blog: inputBlogDTO
-    ): ResponseEntity<ResultBean<Blog>> {
+    ): ResponseEntity<ResultBean<CreatedResponseBody<Blog>>> {
 //        TODO: user pass from Spring Security
-        val result = blogService.createBlog(blog.toBlog(userService.findByID(1).orElseThrow { throw IllegalStateException() }))
-        return ResponseEntity
-                .created(URI.create("/blog/${result.id}"))
-                .body(ResultBean(result))
+        val result = blogService.createBlog(blog.toBlog(
+                userService
+                        .findByID(1)
+                        .orElseThrow { throw IllegalStateException() }
+        ))
+        val url = URI.create("/blog/${result.id}")
+        return created(url, result)
     }
 
     @PutMapping

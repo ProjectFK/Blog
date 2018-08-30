@@ -35,7 +35,7 @@ class UserController {
         val body = userService.registryNewUser(name, "")
         return created(URI.create("/user/${body.id}"), body)
     }
-    
+
 }
 
 class UserAuthorizationDTO(

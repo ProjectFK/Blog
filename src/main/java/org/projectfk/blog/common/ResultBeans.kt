@@ -22,8 +22,6 @@ open class ResultBean<T> (
         state: State = SuccessState
 ) : Serializable {
 
-//    should I?
-//    @JsonUnwrapped
     @JsonProperty
     @field:JsonInclude(Include.NON_NULL)
     val result = result
@@ -56,7 +54,8 @@ class ExceptionState(
 
 @ResponseStatus(code = HttpStatus.CREATED)
 private class CreatedState(
-        val url: String
+        @JsonProperty("location")
+        val location: String
 ) : State("created")
 
 @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
