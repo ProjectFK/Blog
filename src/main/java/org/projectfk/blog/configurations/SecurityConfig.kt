@@ -28,4 +28,4 @@ open class SecurityConfig : WebSecurityConfigurerAdapter() {
 
 }
 
-class custom : UsernamePasswordAuthenticationFilter()
+typealias custom = UsernamePasswordAuthenticationFilter

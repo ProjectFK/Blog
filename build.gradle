@@ -53,8 +53,9 @@ dependencies {
 //    Databases
     runtime group: 'mysql', name: 'mysql-connector-java', version: '8.0.12'
     runtime group: 'com.h2database', name: 'h2', version: '1.4.197'
+    compile group: 'org.hibernate', name: 'hibernate-java8', version: '5.3.6.Final'
 
-
+//    testing dependency that I don't actual care
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.2.RELEASE'
     testCompile group: 'org.springframework.security', name: 'spring-security-test', version: '5.0.5.RELEASE'
     testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: kotlin_version

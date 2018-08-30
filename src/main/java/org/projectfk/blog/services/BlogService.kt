@@ -23,7 +23,7 @@ class BlogService {
         _service.compareAndSet(null, this);
     }
 
-    fun listAllBlogs(): List<Blog> = repo.findAll().toList()
+    fun listAllBlogs(): List<Blog> = repo.findAllByOrderByModifyDateDesc().toList()
 
     private fun saveBlog(content: Blog): Blog = repo.save(content)
 

@@ -7,6 +7,7 @@ import org.projectfk.blog.data.Blog
 import org.projectfk.blog.data.User
 import org.projectfk.blog.services.BlogService
 import org.projectfk.blog.services.UserService
+import org.projectfk.blog.services.findUserAsThisIsAnIDName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
@@ -54,9 +55,10 @@ class BlogController {
             blogService
                     .blogByID(blog.id)
                     .map {
-//                        TODO: User pass from Spring Security
+                        //                        TODO: User pass from Spring Security
                         validateUserOrThrow(it, userService.findByID(1).orElse(null))
                         it.swap(blog)
+                        blogService.updateBlog(it)
                         ResultBean(it)
                     }
                     .orElseThrow { NotFoundException("not found blog with id: ${blog.id}") }
@@ -69,9 +71,19 @@ class BlogController {
 
     @GetMapping("/listByAuthor")
     fun listBlogByUser(
-            @PathVariable("author")
-            author: User
-    ): ResultBean<List<Blog>> = ResultBean(blogService.blogByAuthor(author))
+            @RequestParam("author")
+            author: Int
+    ): ResultBean<List<Blog>> =
+            ResultBean(
+                    blogService
+                            .blogByAuthor(
+                                    author
+                                            .findUserAsThisIsAnIDName()
+                                            .orElseThrow {
+                                                NotFoundException("user with id: $author do not found")
+                                            }
+                            )
+            )
 
 }
 

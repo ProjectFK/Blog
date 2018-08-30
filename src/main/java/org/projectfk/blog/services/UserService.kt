@@ -50,6 +50,7 @@ class UserService : UserDetailsService {
     }
 
     fun registryNewUser(name: String, password: String): User {
+//        TODO: name validation, password validation
         logger.info("Registering user: $name")
         if (name.length > 20 || name.isEmpty() || name == "_" )
             throw IllegalParametersException(
@@ -75,3 +76,5 @@ class UserService : UserDetailsService {
     }
 
 }
+
+fun Int.findUserAsThisIsAnIDName(): Optional<User> = UserService.UserService.findByID(this)
