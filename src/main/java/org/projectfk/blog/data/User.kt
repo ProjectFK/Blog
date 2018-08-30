@@ -1,6 +1,5 @@
 package org.projectfk.blog.data
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -77,8 +76,16 @@ class User : Serializable, UserDetails {
 
     override fun toString(): String = "User(name='$username', id=$id')"
 
-    @JsonAnyGetter
-    fun formatToJson(): Map<String, Any> = emptyMap()
+    override fun equals(other: Any?): Boolean {
+        if (other == this) return true
+        if (!(other is User)) return false
+        if (other.id != 0) return this.id == other.id
+        return this.username == other.username
+    }
+
+    override fun hashCode(): Int {
+        return username.hashCode()
+    }
 
     companion object {
 
@@ -92,6 +99,13 @@ class User : Serializable, UserDetails {
                 IllegalParametersException("there's no such user with id: $id in database")
             }
         }
+
+        @JvmStatic
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        fun JsonIDEntry(
+                id: String
+        ): User = UserService.UserService.loadUserByUsername(id)
+//        IllegalParametersException("there's no such user with id: $id in database")
 
 
     }

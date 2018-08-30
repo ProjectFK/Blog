@@ -3,6 +3,7 @@ package org.projectfk.blog.services
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.projectfk.blog.common.IllegalParametersException
+import org.projectfk.blog.common.debugIfEnable
 import org.projectfk.blog.data.User
 import org.projectfk.blog.data.UserRepo
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,19 +34,19 @@ class UserService : UserDetailsService {
 
     override fun loadUserByUsername(username: String): User {
         logger.debugIfEnable { "loading user with user name: $username" }
-        val users = userRepo.findByUsername(username).toList()
-        if (users.isEmpty()) {
+        val users = userRepo.findByUsername(username).iterator()
+        if (!users.hasNext()) {
             val notFoundException = UsernameNotFoundException("User with username: $username do not exists")
             logger.debugIfEnable(notFoundException) { "user $username do not found" }
             throw notFoundException
         }
-        if (users.size > 1) {
+        val value = users.next()
+        if (users.hasNext()) {
             val message = "multiple user with same name, user name is: $username"
             val assertionError = AssertionError(message)
             logger.fatal(message, assertionError)
-            throw assertionError
         }
-        return users[0]
+        return value
     }
 
     fun registryNewUser(name: String, password: String): User {
@@ -55,14 +56,11 @@ class UserService : UserDetailsService {
                     "the name should be shorter than 20 characters and bigger than 1 character and not a \"_\"; " +
                             "name given: $name"
             )
-        try {
-            loadUserByUsername(name)
+        if (userRepo.findByUsername(name).iterator().hasNext())
             throw IllegalParametersException("user with name $name already exists")
-        } catch (e: UsernameNotFoundException) {}
         val encodedPassword = passwordEncoder.encode(password)
         val user = User(name, encodedPassword)
-        saveUser(user)
-        return user
+        return saveUser(user)
     }
 
     companion object {
@@ -70,14 +68,10 @@ class UserService : UserDetailsService {
         /**
          * Expose for Jackson User Deserialize Entry
          */
-        internal lateinit var UserService: UserService
+        @JvmStatic
+        lateinit var UserService: UserService
+            private set
 
     }
 
-}
-
-//better performance for more bsting
-//No need to lazy load throwable
-inline fun Log.debugIfEnable(throwable: Throwable? = null, message: () -> String): Unit {
-    if (isDebugEnabled) debug(message.invoke(), throwable)
 }

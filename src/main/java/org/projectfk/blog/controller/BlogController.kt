@@ -9,6 +9,7 @@ import org.projectfk.blog.services.BlogService
 import org.projectfk.blog.services.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -26,7 +27,7 @@ class BlogController {
     fun getAll(): ResultBean<List<Blog>> = ResultBean(blogService.listAllBlogs())
 
     @GetMapping("/{id:[0-9]}")
-    fun getByID(@PathVariable("id") id:Int): ResultBean<Blog> {
+    fun getByID(@PathVariable("id") id: Int): ResultBean<Blog> {
         if (id <= 0) throw IllegalParametersException("id should not be smaller than 0 or equals 1")
         val result = blogService.blogByID(id)
         if (result.isPresent) return ResultBean(result.get())
@@ -36,12 +37,34 @@ class BlogController {
     @PostMapping
     fun createBlog(
             @RequestBody
-            postBody: Blog
+            blog: inputBlogDTO
     ): ResponseEntity<ResultBean<Blog>> {
-        val result = blogService.createBlog(postBody)
+//        TODO: user pass from Spring Security
+        val result = blogService.createBlog(blog.toBlog(userService.findByID(1).orElseThrow { throw IllegalStateException() }))
         return ResponseEntity
                 .created(URI.create("/blog/${result.id}"))
                 .body(ResultBean(result))
+    }
+
+    @PutMapping
+    fun updateBlog(
+            @RequestBody
+            blog: updateBlogDTO
+    ): ResultBean<Blog> =
+            blogService
+                    .blogByID(blog.id)
+                    .map {
+//                        TODO: User pass from Spring Security
+                        validateUserOrThrow(it, userService.findByID(1).orElse(null))
+                        it.swap(blog)
+                        ResultBean(it)
+                    }
+                    .orElseThrow { NotFoundException("not found blog with id: ${blog.id}") }
+
+    private fun validateUserOrThrow(blog: Blog, user: User): Blog {
+        if (blog.author != user)
+            throw AccessDeniedException("operation user do not match blog author")
+        return blog
     }
 
     @GetMapping("/listByAuthor")
@@ -50,4 +73,18 @@ class BlogController {
             author: User
     ): ResultBean<List<Blog>> = ResultBean(blogService.blogByAuthor(author))
 
+}
+
+sealed class IInputBlogDTO(val content: String, val title: String)
+
+class inputBlogDTO(content: String, title: String) : IInputBlogDTO(content, title)
+
+class updateBlogDTO(val id: Int, content: String, title: String) : IInputBlogDTO(content, title)
+
+fun inputBlogDTO.toBlog(author: User): Blog = Blog(author, this.title, this.content)
+
+fun Blog.swap(target: updateBlogDTO): Blog {
+    this.content = target.content
+    this.title = target.title
+    return this
 }

@@ -20,26 +20,32 @@ class BlogService {
 
     @PostConstruct
     fun linkToStaticField() {
-        _service.compareAndExchange(null, this);
+        _service.compareAndSet(null, this);
     }
 
     fun listAllBlogs(): List<Blog> = repo.findAll().toList()
 
-    fun saveBlog(content: Blog): Blog = repo.save(content)
-
-    fun saveBlogs(contents: List<Blog>): List<Blog> = repo.saveAll(contents).toList()
+    private fun saveBlog(content: Blog): Blog = repo.save(content)
 
     fun delete(blog: Blog): Unit = repo.delete(blog)
-
-    fun deleteAlot(blogs: List<Blog>): Unit = repo.deleteAll(blogs)
 
     fun blogByID(id: Int): Optional<Blog> = repo.findById(id)
 
     fun blogByAuthor(author: User): List<Blog> = repo.findByAuthor(author).toList()
 
-    fun createBlog(content: Blog): Blog = saveBlog(content)
+    fun createBlog(content: Blog): Blog {
+        assert(!content.alreadyLoaded())
+        return saveBlog(content)
+    }
+
+    fun updateBlog(target: Blog): Blog {
+        assert(target.alreadyLoaded())
+        return saveBlog(target)
+    }
 
     companion object {
+
+        @JvmStatic
         val service: BlogService
             get() {
                 val result = _service.get()
@@ -51,7 +57,7 @@ class BlogService {
 
         @JsonCreator
         fun jsonCreatorEntry(
-                @JsonProperty("id", required = true)
+                @JsonProperty("id")
                 id: Int
         ): Blog = service.blogByID(id).orElseThrow {
             IllegalParametersException("there's no such blog with id: $id in database")
