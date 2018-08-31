@@ -37,10 +37,3 @@ class UserController {
     }
 
 }
-
-class UserAuthorizationDTO(
-        val name: String,
-        val password: String,
-        val recaptcha_token: String,
-        val time: Long
-)

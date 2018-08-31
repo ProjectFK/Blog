@@ -54,4 +54,4 @@ out
 
 ### secrets ###
 recaptcha_config.properties
-database-config.properties
+database_config.properties

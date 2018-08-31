@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForObject
+import java.lang.Error
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -43,21 +44,21 @@ open class RecaptchaVerifyService {
                 logger.debugIfEnable { "request valid via url: $url" }
 
                 val returnV: Map<String, Any> = restTemplate.postForObject(url)
-                        ?: throwError(NullPointerException("server returned nothing"))
+                        ?: throwError(RecaptchaInternalError(NullPointerException("server returned nothing")))
 
-                if (returnV["error-codes"] != null) {
-                    val errorCodes = returnV["error-codes"] as List<*>
-                    logger.debugIfEnable {
-                        "error-codes property in validation return value occurs! error-code: " +
-                                errorCodes.joinToString { any -> any.toString() + " " }
-                    }
-                    if (errorCodes.contains("invalid-input-response")) product = false to "invalid token"
-                    if (errorCodes.contains("timeout-or-duplicate")) product = false to "timeout or duplicate"
-                    val message = "unaccepted error-codes received from recaptcha server in validating recaptcha token!" +
-                            "\n error codes: ${errorCodes.joinToString { any -> any.toString() }}"
-                    logger.error(message)
-                    throwError(IllegalStateException(message))
-                }
+                                if(returnV["error-codes"] != null) {
+                            val errorCodes = returnV["error-codes"] as List<*>
+                            logger.debugIfEnable {
+                                "error-codes property in validation return value occurs! error-code: " +
+                                        errorCodes.joinToString { any -> any.toString() + " " }
+                            }
+                            if (errorCodes.contains("invalid-input-response")) product = false to "invalid token"
+                            if (errorCodes.contains("timeout-or-duplicate")) product = false to "timeout or duplicate"
+                            val message = "unaccepted error-codes received from recaptcha server in validating recaptcha token!" +
+                                    "\n error codes: ${errorCodes.joinToString { any -> any.toString() }}"
+                            logger.error(message)
+                            throwError(RecaptchaInternalError(IllegalStateException(message)))
+                        }
 
                 if (returnV["success"] != true) product = false to "recaptcha says you're a robot"
 
@@ -73,7 +74,7 @@ open class RecaptchaVerifyService {
                 return@supplyAsync product
             } catch (e: RestClientException) {
                 logger.warn("RestClientException while validating recaptcha token", e)
-                throwError(e)
+                throwError(RecaptchaInternalError(e))
             }
         }
     }
@@ -94,3 +95,5 @@ class RecaptchaFatal(msg: String, cause: Throwable) : RecaptchaException(msg, ca
 
 @ResponseStatus(HttpStatus.FORBIDDEN)
 class RecaptchaFailed(msg: String) : RecaptchaException(msg)
+
+class RecaptchaInternalError(throwable: Throwable): Error(throwable)

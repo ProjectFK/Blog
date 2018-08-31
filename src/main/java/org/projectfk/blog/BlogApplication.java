@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 @EnableAsync
-@PropertySource("classpath:database-config.properties")
+@PropertySource("classpath:database_config.properties")
 public class BlogApplication implements WebMvcConfigurer {
 
 	public static void main(String[] args) {

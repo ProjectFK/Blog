@@ -50,7 +50,10 @@ class UserService : UserDetailsService {
     }
 
     fun registryNewUser(name: String, password: String): User {
-//        TODO: name validation, password validation
+        if (!validateUserName(name))
+            throw IllegalParametersException("Naming do not match requirement")
+        if (!validatePassword(password))
+            throw IllegalParametersException("Password do not match requirement")
         logger.info("Registering user: $name")
         if (name.length > 20 || name.isEmpty() || name == "_" )
             throw IllegalParametersException(
@@ -72,6 +75,16 @@ class UserService : UserDetailsService {
         @JvmStatic
         lateinit var UserService: UserService
             private set
+
+        fun validateUserName(name: String): Boolean {
+//            TODO: validate logic
+            return true;
+        }
+
+        fun validatePassword(pwd: String): Boolean {
+//            TODO: validate logic
+            return true;
+        }
 
     }
 
