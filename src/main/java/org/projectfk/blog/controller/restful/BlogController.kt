@@ -1,4 +1,4 @@
-package org.projectfk.blog.controller
+package org.projectfk.blog.controller.restful
 
 import org.projectfk.blog.common.*
 import org.projectfk.blog.data.Blog
