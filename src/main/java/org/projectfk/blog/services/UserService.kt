@@ -7,6 +7,8 @@ import org.projectfk.blog.common.debugIfEnable
 import org.projectfk.blog.data.User
 import org.projectfk.blog.data.UserRepo
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.PropertySource
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
+@PropertySource("classpath:common_settings_config.properties")
 class UserService : UserDetailsService {
 
     private val logger: Log by lazy { LogFactory.getLog(UserService::class.java) }
@@ -55,16 +58,18 @@ class UserService : UserDetailsService {
         if (!validatePassword(password))
             throw IllegalParametersException("Password do not match requirement")
         logger.info("Registering user: $name")
-        if (name.length > 20 || name.isEmpty() || name == "_" )
-            throw IllegalParametersException(
-                    "the name should be shorter than 20 characters and bigger than 1 character and not a \"_\"; " +
-                            "name given: $name"
-            )
         if (userRepo.findByUsername(name).iterator().hasNext())
             throw IllegalParametersException("user with name $name already exists")
         val encodedPassword = passwordEncoder.encode(password)
         val user = User(name, encodedPassword)
         return saveUser(user)
+    }
+
+    @Value("\${user.password.check.regexp}")
+    private lateinit var _passwordCheckRegex: String
+
+    private val passwordCheckRegex by lazy {
+        Regex(_passwordCheckRegex)
     }
 
     companion object {
@@ -76,15 +81,9 @@ class UserService : UserDetailsService {
         lateinit var UserService: UserService
             private set
 
-        fun validateUserName(name: String): Boolean {
-//            TODO: validate logic
-            return true;
-        }
+        fun validateUserName(name: String): Boolean = name.length <= 20
 
-        fun validatePassword(pwd: String): Boolean {
-//            TODO: validate logic
-            return true;
-        }
+        fun validatePassword(pwd: String): Boolean = pwd.matches(UserService.passwordCheckRegex)
 
     }
 
