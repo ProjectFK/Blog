@@ -1,10 +1,14 @@
 package org.projectfk.blog.configurations
 
 import org.projectfk.blog.security.CustomAuthenticationFilter
+import org.projectfk.blog.services.UserService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.PropertySource
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
@@ -21,14 +25,31 @@ open class SecurityConfig : WebSecurityConfigurerAdapter() {
     @Value("\${login.loginPath}")
     lateinit var loginPath: String
 
+    @Autowired
+    lateinit var userService: UserService
+
     override fun configure(http: HttpSecurity) {
         http
                 .authorizeRequests()
                     .antMatchers(loginPath).anonymous()
-                    .anyRequest().anonymous()
+                    .antMatchers("/test").authenticated()
+                .anyRequest().anonymous()
                 .and()
                 .addFilterAfter(authorizationFilter(), UsernamePasswordAuthenticationFilter::class.java)
                 .csrf().disable()
+    }
+
+    @Bean
+    open fun authProvider(): DaoAuthenticationProvider {
+        val provider = DaoAuthenticationProvider()
+        provider.setUserDetailsService(userService)
+        provider.setPasswordEncoder(passwordEncoder())
+        return provider
+    }
+
+    @Autowired
+    open fun configAuthProvider(builder: AuthenticationManagerBuilder) {
+        builder.authenticationProvider(authProvider())
     }
 
     @Bean

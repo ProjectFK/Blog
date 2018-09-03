@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import java.io.Serializable
 import java.net.URI
 
-@JsonPropertyOrder("state", "result")
+@JsonPropertyOrder("state", "message", "result")
 @JsonInclude(Include.NON_NULL)
-open class ResultBean<T> (
+open class ResultBean<T>(
         result: T?,
 
         @field:JsonProperty
@@ -32,34 +32,30 @@ open class ResultBean<T> (
 
 }
 
-class StateResultBean(state: State) : ResultBean<State>(null, state = state) {
-    constructor() : this(SuccessState)
-}
-
-sealed class State(val state: String)
-
+@JsonPropertyOrder("state", "state_message")
+sealed class State(
+        val state: String,
+        @field:JsonInclude(Include.NON_EMPTY)
+        val state_message: String
+)
 
 @ResponseStatus(code = HttpStatus.OK)
-object SuccessState : State("success!")
+object SuccessState : State("success", "")
 
 @ResponseStatus(code = HttpStatus.FORBIDDEN)
-@JsonPropertyOrder("state", "exception message")
 class ExceptionState(
-        @JsonProperty("exception message")
+        @JsonInclude(Include.NON_EMPTY)
         val exception_msg: String
-) : State("exception :(") {
-    //        KnownException can not pass null message into KnownException.message
-    constructor(knownException: KnownException) : this(knownException.message!!)
-}
+) : State("failed", "exception")
 
 @ResponseStatus(code = HttpStatus.CREATED)
 private class CreatedState(
         @JsonProperty("location")
         val location: String
-) : State("created")
+) : State("success","created")
 
 @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
-object ErrorState : State("Internal Error (whaaaaaaaaaat!)")
+object ErrorState : State("failed","Internal Error (whaaaaaaaaaat!)")
 
 fun <T> created(
         uri: URI,
@@ -72,3 +68,6 @@ class CreatedResponseBody<T> internal constructor(
         @JsonUnwrapped
         val content: T
 )
+
+@ResponseStatus(code = HttpStatus.BAD_REQUEST)
+object BadRequestState : State("failed","bad request")

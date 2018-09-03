@@ -50,6 +50,7 @@ hs_err_pid*
 
 ### Gradle output ###
 build
+.gradle
 out
 
 ### secrets ###

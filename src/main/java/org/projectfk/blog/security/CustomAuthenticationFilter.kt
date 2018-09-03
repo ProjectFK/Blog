@@ -3,22 +3,76 @@ package org.projectfk.blog.security
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.apache.commons.logging.LogFactory
+import org.projectfk.blog.common.ExceptionState
+import org.projectfk.blog.common.ResultBean
+import org.projectfk.blog.common.SuccessState
 import org.projectfk.blog.common.debugIfEnable
+import org.projectfk.blog.data.User
 import org.projectfk.blog.services.RecaptchaInternalError
 import org.projectfk.blog.services.RecaptchaVerifyService
 import org.projectfk.blog.services.UserService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.PropertySource
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.security.access.AuthorizationServiceException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.InternalAuthenticationServiceException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
+import javax.servlet.FilterChain
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+@PropertySource("classpath:security_config.properties")
 class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
+
+    init {
+        setAuthenticationSuccessHandler { _, response, authentication ->
+            response.status = HttpStatus.MOVED_PERMANENTLY.value()
+            response.addHeader("Location", successRedirectTarget)
+
+            response.contentType = MediaType.APPLICATION_JSON_UTF8_VALUE
+
+            val user = authentication.principal as User
+            objectMapper
+                    .writer()
+                    .writeValue(response.writer, ResultBean(
+                            user,
+                            message = "welcome!",
+                            state = SuccessState)
+                    )
+        }
+
+        setAuthenticationFailureHandler { _, response, exception ->
+            response.contentType = MediaType.APPLICATION_JSON_UTF8_VALUE
+
+            objectMapper
+                    .writer()
+                    .writeValue(
+                            response.writer,
+                            ResultBean(null, state = ExceptionState(exception.message?:""))
+                    )
+        }
+
+    }
+
+    @Value("\${login.checkRecaptcha}")
+    private lateinit var _enableRecaptcha: String
+
+    @Value("\${login.successRedirect}")
+    private lateinit var successRedirectTarget: String
+
+    private val enableRecaptcha: Boolean by lazy {
+        !(_enableRecaptcha.toLowerCase().equals("false"))
+    }
 
     @Autowired
     private lateinit var objectMapper: ObjectMapper
@@ -28,17 +82,36 @@ class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
 
     private val LOG = LogFactory.getLog(CustomAuthenticationFilter::class.java)!!
 
-    override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication {
-        val body = objectMapper.readValue<UserAuthorizationDTO>(request.reader.readText())
+    override fun doFilter(_req: ServletRequest?, _res: ServletResponse?, chain: FilterChain?) {
+        val req = _req as HttpServletRequest
+        val res = _res as HttpServletResponse
+        val acceptHeader = req.getHeader("accept") ?: req.getHeader("Accept")
+        if (acceptHeader == null || acceptHeader.contains("*/*") || acceptHeader.contains("json", true))
+            super.doFilter(req, res, chain)
 
-        if (!UserService.validateUserName(body.name) || !UserService.validatePassword(body.password))
+//        Json is not acceptable for the client
+        res.status = HttpStatus.NOT_ACCEPTABLE.value()
+    }
+
+    /**
+     * Will throw BadCredentialsException or BadRequestAuthorizationException
+     */
+    override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication {
+        val body = obtainUserDTO(request) ?: throw BadRequestAuthorizationException()
+
+        val (name, password) = body.obtainNameAndPassword()
+
+        if (!UserService.validateUserName(name) || !UserService.validatePassword(password))
             throw BadCredentialsException("Name or Password is wrong.")
 
-        LOG.debugIfEnable { "${body.name} is attempting to authorize" }
+        LOG.debugIfEnable { "$name is attempting to authorize" }
 
-        val validate = verifyService.validate(body.recaptcha_token)
+        val validate: CompletableFuture<Pair<Boolean, String>>
 
-        val token = UsernamePasswordAuthenticationToken(body.name, body.password)
+        if (enableRecaptcha) validate = verifyService.validate(body.recaptcha_token)
+        else validate = CompletableFuture.completedFuture(true to "Skiped recaptcha by configuration")
+
+        val token = UsernamePasswordAuthenticationToken(name, password)
 
         setDetails(request, token)
 
@@ -46,7 +119,7 @@ class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
 
         try {
             LOG.debugIfEnable { "Authorization with user: ${body.name} passing to authorization manager" }
-            authentication = this.getAuthenticationManager().authenticate(token)
+            authentication = this.authenticationManager.authenticate(token)
             LOG.debugIfEnable { "Authorization with authorization manager success with authentication $authentication" }
         } catch (e: Throwable) {
             LOG.debugIfEnable { "Authorization with user: ${body.name} failed with an exception ${e.javaClass}" }
@@ -65,13 +138,30 @@ class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
         } catch (e: InterruptedException) {
             throw InternalAuthenticationServiceException("Internal Error", e)
         } catch (e: ExecutionException) {
-            val baseException = e.cause
+            val baseException = e.cause ?: throw InternalAuthenticationServiceException("Internal Error", e)
             if (baseException is RecaptchaInternalError)
                 throw InternalAuthenticationServiceException("Internal Error", e)
         }
 
         return authentication
     }
+
+    private fun obtainUserDTO(request: HttpServletRequest): UserAuthorizationDTO? {
+        val paraMap = request.parameterMap
+//        Already parased by framework
+//        Probably form-data or x-www-form-urlencoded
+        if (paraMap != null && paraMap.isNotEmpty()) {
+            val name = paraMap["name"]?.elementAtOrNull(0)
+            val password = paraMap["password"]?.elementAtOrNull(0)
+            val recaptcha_token = paraMap["recaptcha_token"]?.elementAtOrNull(0)
+            if (name == null || password == null || recaptcha_token == null)
+                return null
+            return UserAuthorizationDTO(name, password, recaptcha_token)
+        }
+        return objectMapper.readValue(request.reader.readText())
+    }
+
+    protected fun UserAuthorizationDTO.obtainNameAndPassword(): Pair<String, String> = this.name to this.password
 
 }
 
@@ -80,3 +170,5 @@ class UserAuthorizationDTO(
         val password: String,
         val recaptcha_token: String
 )
+
+class BadRequestAuthorizationException: AuthorizationServiceException("Bad Request")
