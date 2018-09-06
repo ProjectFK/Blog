@@ -16,11 +16,11 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.security.access.AuthorizationServiceException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.InternalAuthenticationServiceException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @PropertySource("classpath:security_config.properties")
-class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
+open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
 
     init {
         setAuthenticationSuccessHandler { _, response, authentication ->
@@ -58,7 +58,7 @@ class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
                     .writer()
                     .writeValue(
                             response.writer,
-                            ResultBean(null, state = ExceptionState(exception.message?:""))
+                            ResultBean(null, state = ExceptionState(exception.message ?: ""))
                     )
         }
 
@@ -158,7 +158,9 @@ class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
                 return null
             return UserAuthorizationDTO(name, password, recaptcha_token)
         }
-        return objectMapper.readValue(request.reader.readText())
+        val requestContent = request.reader.readText()
+        if (requestContent.length < 2) return null
+        return objectMapper.readValue(requestContent)
     }
 
     protected fun UserAuthorizationDTO.obtainNameAndPassword(): Pair<String, String> = this.name to this.password
@@ -171,4 +173,4 @@ class UserAuthorizationDTO(
         val recaptcha_token: String
 )
 
-class BadRequestAuthorizationException: AuthorizationServiceException("Bad Request")
+class BadRequestAuthorizationException : AuthenticationException("Bad Request")

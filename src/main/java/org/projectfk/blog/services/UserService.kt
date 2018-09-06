@@ -81,7 +81,7 @@ class UserService : UserDetailsService {
         lateinit var UserService: UserService
             private set
 
-        fun validateUserName(name: String): Boolean = name.length <= 20
+        fun validateUserName(name: String): Boolean = name.length in 2..20
 
         fun validatePassword(pwd: String): Boolean = pwd.matches(UserService.passwordCheckRegex)
 
