@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.apache.commons.logging.LogFactory
 import org.projectfk.blog.common.ExceptionState
 import org.projectfk.blog.common.ResultBean
-import org.projectfk.blog.common.SuccessState
 import org.projectfk.blog.common.debugIfEnable
 import org.projectfk.blog.data.User
 import org.projectfk.blog.services.RecaptchaInternalError
@@ -25,9 +24,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
-import javax.servlet.FilterChain
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -46,12 +42,16 @@ open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
                     .writer()
                     .writeValue(response.writer, ResultBean(
                             user,
-                            message = "welcome!",
-                            state = SuccessState)
-                    )
+                            message = "welcome!"
+                    ))
         }
 
         setAuthenticationFailureHandler { _, response, exception ->
+            if (exception is NotAcceptableAuthenticationException) {
+                response.status = HttpStatus.NOT_ACCEPTABLE.value()
+                return@setAuthenticationFailureHandler
+            }
+
             response.contentType = MediaType.APPLICATION_JSON_UTF8_VALUE
 
             objectMapper
@@ -82,21 +82,19 @@ open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
 
     private val LOG = LogFactory.getLog(CustomAuthenticationFilter::class.java)!!
 
-    override fun doFilter(_req: ServletRequest?, _res: ServletResponse?, chain: FilterChain?) {
-        val req = _req as HttpServletRequest
-        val res = _res as HttpServletResponse
-        val acceptHeader = req.getHeader("accept") ?: req.getHeader("Accept")
-        if (acceptHeader == null || acceptHeader.contains("*/*") || acceptHeader.contains("json", true))
-            super.doFilter(req, res, chain)
-
-//        Json is not acceptable for the client
-        res.status = HttpStatus.NOT_ACCEPTABLE.value()
-    }
-
     /**
      * Will throw BadCredentialsException or BadRequestAuthorizationException
      */
     override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication {
+
+//        Filter level do not have any
+        val acceptHeader = request.getHeader("accept") ?: request.getHeader("Accept")
+        if (!(
+                        acceptHeader == null ||
+                                acceptHeader.contains("*/*") ||
+                                acceptHeader.contains("json", true)))
+            throw NotAcceptableAuthenticationException()
+
         val body = obtainUserDTO(request) ?: throw BadRequestAuthorizationException()
 
         val (name, password) = body.obtainNameAndPassword()
@@ -174,3 +172,5 @@ class UserAuthorizationDTO(
 )
 
 class BadRequestAuthorizationException : AuthenticationException("Bad Request")
+
+private class NotAcceptableAuthenticationException : AuthenticationException("Content Negotiation Not Acceptable")
