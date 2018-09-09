@@ -52,8 +52,8 @@ open class RecaptchaVerifyService {
                                 "error-codes property in validation return value occurs! error-code: " +
                                         errorCodes.joinToString { any -> any.toString() + " " }
                             }
-                            if (errorCodes.contains("invalid-input-response")) product = false to "invalid token"
-                            if (errorCodes.contains("timeout-or-duplicate")) product = false to "timeout or duplicate"
+                            if ("invalid-input-response" in errorCodes) product = false to "invalid token"
+                            if ("timeout-or-duplicate" in errorCodes) product = false to "timeout or duplicate"
                             val message = "unaccepted error-codes received from recaptcha server in validating recaptcha token!" +
                                     "\n error codes: ${errorCodes.joinToString { any -> any.toString() }}"
                             logger.error(message)

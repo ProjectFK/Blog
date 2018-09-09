@@ -52,10 +52,10 @@ class ExceptionState(
 private class CreatedState(
         @JsonProperty("location")
         val location: String
-) : State("success","created")
+) : State("success", "created")
 
 @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
-object ErrorState : State("failed","Internal Error (whaaaaaaaaaat!)")
+object ErrorState : State("failed", "Internal Error (whaaaaaaaaaat!)")
 
 fun <T> created(
         uri: URI,
@@ -70,4 +70,13 @@ class CreatedResponseBody<T> internal constructor(
 )
 
 @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-object BadRequestState : State("failed","bad request")
+object BadRequestState : State("failed", "bad request")
+
+class ExceptionResultBean(
+        message: String = "Exception occured, process failed",
+        exception_msg: String = ""
+) : ResultBean<Any>(
+        null,
+        message,
+        state = ExceptionState(exception_msg)
+)

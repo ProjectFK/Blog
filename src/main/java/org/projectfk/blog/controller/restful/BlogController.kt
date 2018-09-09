@@ -8,7 +8,6 @@ import org.projectfk.blog.services.UserService
 import org.projectfk.blog.services.findUserAsThisIsAnIDName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -30,7 +29,7 @@ class BlogController {
         if (id <= 0) throw IllegalParametersException("id should not be smaller than 0 or equals 1")
         val result = blogService.blogByID(id)
         if (result.isPresent) return ResultBean(result.get())
-        else throw NotFoundException()
+        else throw NotFoundException("Blog with id: $id not found")
     }
 
     @PostMapping
@@ -66,7 +65,7 @@ class BlogController {
 
     private fun validateUserOrThrow(blog: Blog, user: User): Blog {
         if (blog.author != user)
-            throw AccessDeniedException("operation user do not match blog author")
+            throw ForbiddenException("operating user do not match blog author")
         return blog
     }
 

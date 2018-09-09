@@ -2,6 +2,7 @@ package org.projectfk.blog.services
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.projectfk.blog.common.ForbiddenException
 import org.projectfk.blog.common.IllegalParametersException
 import org.projectfk.blog.common.debugIfEnable
 import org.projectfk.blog.data.User
@@ -48,10 +49,15 @@ class UserService : UserDetailsService {
             val message = "multiple user with same name, user name is: $username"
             val assertionError = AssertionError(message)
             logger.fatal(message, assertionError)
+            throw assertionError
         }
         return value
     }
 
+    /**
+     * Registry a new User
+     * @throws IllegalParametersException when parameter given do not match requirement
+     */
     fun registryNewUser(name: String, password: String): User {
         if (!validateUserName(name))
             throw IllegalParametersException("Naming do not match requirement")
@@ -59,7 +65,7 @@ class UserService : UserDetailsService {
             throw IllegalParametersException("Password do not match requirement")
         logger.info("Registering user: $name")
         if (userRepo.findByUsername(name).iterator().hasNext())
-            throw IllegalParametersException("user with name $name already exists")
+            throw ForbiddenException("user with name $name already exists")
         val encodedPassword = passwordEncoder.encode(password)
         val user = User(name, encodedPassword)
         return saveUser(user)
