@@ -54,6 +54,7 @@ open class RecaptchaVerifyService {
                             }
                             if ("invalid-input-response" in errorCodes) product = false to "invalid token"
                             if ("timeout-or-duplicate" in errorCodes) product = false to "timeout or duplicate"
+                            if (!product.first) return@supplyAsync product
                             val message = "unaccepted error-codes received from recaptcha server in validating recaptcha token!" +
                                     "\n error codes: ${errorCodes.joinToString { any -> any.toString() }}"
                             logger.error(message)
@@ -92,8 +93,5 @@ sealed class RecaptchaException(msg: String, cause: Throwable? = null) : KnownEx
 
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 class RecaptchaFatal(msg: String, cause: Throwable) : RecaptchaException(msg, cause)
-
-@ResponseStatus(HttpStatus.FORBIDDEN)
-class RecaptchaFailed(msg: String) : RecaptchaException(msg)
 
 class RecaptchaInternalError(throwable: Throwable): Error(throwable)

@@ -7,7 +7,7 @@ import org.projectfk.blog.common.ExceptionState
 import org.projectfk.blog.common.ResultBean
 import org.projectfk.blog.common.debugIfEnable
 import org.projectfk.blog.data.User
-import org.projectfk.blog.services.RecaptchaInternalError
+import org.projectfk.blog.services.RecaptchaFatal
 import org.projectfk.blog.services.RecaptchaVerifyService
 import org.projectfk.blog.services.UserService
 import org.springframework.beans.factory.annotation.Autowired
@@ -54,12 +54,23 @@ open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
 
             response.contentType = MediaType.APPLICATION_JSON_UTF8_VALUE
 
-            objectMapper
-                    .writer()
-                    .writeValue(
-                            response.writer,
-                            ResultBean(null, state = ExceptionState(exception.message ?: ""))
-                    )
+            response.status = HttpStatus.FORBIDDEN.value()
+
+            if (exception is RecaptchaAuthorizationException) {
+                objectMapper
+                        .writer()
+                        .writeValue(
+                                response.writer,
+                                ResultBean(null, state = ExceptionState(exception.message ?: ""))
+                        )
+            } else {
+                objectMapper
+                        .writer()
+                        .writeValue(
+                                response.writer,
+                                ResultBean(null, state = ExceptionState("Name or Password is wrong."))
+                        )
+            }
         }
 
     }
@@ -129,7 +140,7 @@ open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
             val (validationResult, failMessage) = validate.get()
             if (!validationResult) {
                 LOG.info("User ${body.name} failed to pass recaptcha vaildation, fail message: $failMessage")
-                throw BadCredentialsException("Recaptcha Failed: $failMessage")
+                throw RecaptchaAuthorizationException("Recaptcha Failed: $failMessage")
             }
         } catch (e: CancellationException) {
             throw InternalAuthenticationServiceException("Internal Error", e)
@@ -137,8 +148,9 @@ open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
             throw InternalAuthenticationServiceException("Internal Error", e)
         } catch (e: ExecutionException) {
             val baseException = e.cause ?: throw InternalAuthenticationServiceException("Internal Error", e)
-            if (baseException is RecaptchaInternalError)
-                throw InternalAuthenticationServiceException("Internal Error", e)
+            if (baseException is RecaptchaFatal)
+                throw InternalAuthenticationServiceException(baseException.message, baseException)
+            throw InternalAuthenticationServiceException("Internal Error", baseException)
         }
 
         return authentication
@@ -174,3 +186,5 @@ class UserAuthorizationDTO(
 class BadRequestAuthorizationException : AuthenticationException("Bad Request")
 
 private class NotAcceptableAuthenticationException : AuthenticationException("Content Negotiation Not Acceptable")
+
+private class RecaptchaAuthorizationException(msg: String) : BadCredentialsException(msg)

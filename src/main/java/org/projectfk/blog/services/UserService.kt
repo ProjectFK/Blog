@@ -74,9 +74,6 @@ class UserService : UserDetailsService {
     @Value("\${user.password.check.regexp}")
     private lateinit var _passwordCheckRegex: String
 
-    private val passwordCheckRegex by lazy {
-        Regex(_passwordCheckRegex)
-    }
 
     companion object {
 
@@ -89,7 +86,24 @@ class UserService : UserDetailsService {
 
         fun validateUserName(name: String): Boolean = name.length in 2..20
 
-        fun validatePassword(pwd: String): Boolean = pwd.matches(UserService.passwordCheckRegex)
+        private var passwordCheckRegex: Regex? = null
+        private var usingRegex: Boolean? = null
+
+        fun validatePassword(pwd: String): Boolean {
+            if (usingRegex == null) {
+                if (UserService._passwordCheckRegex.equals("false", true)) {
+                    usingRegex = false
+                } else {
+                    usingRegex = true
+                    passwordCheckRegex = Regex(UserService._passwordCheckRegex)
+                }
+            }
+            if (usingRegex!!) {
+                return passwordCheckRegex!!.matches(pwd)
+            } else {
+                return true
+            }
+        }
 
     }
 
