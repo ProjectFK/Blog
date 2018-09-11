@@ -8,6 +8,7 @@ import org.projectfk.blog.services.UserService
 import org.projectfk.blog.services.findUserAsThisIsAnIDName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -32,17 +33,16 @@ class BlogController {
         else throw NotFoundException("Blog with id: $id not found")
     }
 
+//    TODO: Fixing authorization!
     @PostMapping
     fun createBlog(
             @RequestBody
-            blog: inputBlogDTO
+            blog: inputBlogDTO,
+            auth: Authentication
     ): ResponseEntity<ResultBean<CreatedResponseBody<Blog>>> {
+
 //        TODO: user pass from Spring Security
-        val result = blogService.createBlog(blog.toBlog(
-                userService
-                        .findByID(1)
-                        .orElseThrow { throw IllegalStateException() }
-        ))
+        val result = blogService.createBlog(blog.toBlog(auth.principal as User))
         val url = URI.create("/blog/${result.id}")
         return created(url, result)
     }

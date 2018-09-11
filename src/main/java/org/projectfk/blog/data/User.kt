@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import org.hibernate.annotations.CreationTimestamp
 import org.projectfk.blog.common.IllegalParametersException
+import org.projectfk.blog.common.NotFoundException
 import org.projectfk.blog.services.UserService
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -103,11 +104,10 @@ class User : Serializable, UserDetails {
 
         @JvmStatic
         @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        @Throws(NotFoundException::class)
         fun JsonIDEntry(
                 id: String
         ): User = UserService.UserService.loadUserByUsername(id)
-//        IllegalParametersException("there's no such user with id: $id in database")
-
 
     }
 

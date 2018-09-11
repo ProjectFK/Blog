@@ -6,9 +6,10 @@ import org.projectfk.blog.common.ResultBean
 import org.projectfk.blog.common.created
 import org.projectfk.blog.data.User
 import org.projectfk.blog.services.UserService
-import org.projectfk.blog.services.findUserAsThisIsAnIDName
+import org.projectfk.blog.services.supplyNotFound
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -19,15 +20,32 @@ class UserController {
     @Autowired
     private lateinit var userService: UserService
 
-    @GetMapping("{id}")
+    @GetMapping("{name}")
     fun getUser(
-            @PathVariable("id")
-            id: Int
-    ): ResultBean<User> = ResultBean(
-            id
-                    .findUserAsThisIsAnIDName()
-                    .orElseThrow { NotFoundException("user with id: $id do not found") }
-    )
+            @PathVariable("name")
+            name: String
+    ): ResultBean<User> {
+        try {
+            val id = Integer.parseInt(name)
+            return ResultBean(
+                    userService
+                            .findByID(id)
+                            .orElseThrow { supplyNotFound(id) }
+            )
+        } catch (e: NumberFormatException) {}
+
+        if (!UserService.validateUserName(name))
+            throw supplyNotFound(name)
+
+        return ResultBean(
+                try {
+                    userService
+                            .loadUserByUsername(name)
+                } catch (e: UsernameNotFoundException) {
+                    throw NotFoundException(e.message!!)
+                }
+        )
+    }
 
     @PostMapping("registry")
 //    TODO: Place holder

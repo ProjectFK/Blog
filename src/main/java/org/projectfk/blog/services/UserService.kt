@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.projectfk.blog.common.ForbiddenException
 import org.projectfk.blog.common.IllegalParametersException
+import org.projectfk.blog.common.NotFoundException
 import org.projectfk.blog.common.debugIfEnable
 import org.projectfk.blog.data.User
 import org.projectfk.blog.data.UserRepo
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.*
@@ -40,7 +40,7 @@ class UserService : UserDetailsService {
         logger.debugIfEnable { "loading user with user name: $username" }
         val users = userRepo.findByUsername(username).iterator()
         if (!users.hasNext()) {
-            val notFoundException = UsernameNotFoundException("User with username: $username do not exists")
+            val notFoundException = supplyNotFound(username)
             logger.debugIfEnable(notFoundException) { "user $username do not found" }
             throw notFoundException
         }
@@ -110,3 +110,9 @@ class UserService : UserDetailsService {
 }
 
 fun Int.findUserAsThisIsAnIDName(): Optional<User> = UserService.UserService.findByID(this)
+
+fun supplyNotFound(name: String): NotFoundException
+    = NotFoundException("User with username: $name not found")
+
+fun supplyNotFound(id: Int): NotFoundException
+    = NotFoundException("User with id: $id not found")
