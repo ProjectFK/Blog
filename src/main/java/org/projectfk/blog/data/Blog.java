@@ -60,6 +60,9 @@ public class Blog {
 	@CreationTimestamp
 	private LocalDateTime createdDate = LocalDateTime.now();
 
+	@Enumerated(EnumType.STRING)
+	private Tag tag = Tag.tech;
+
 	public int getId() {
 		return id;
 	}
@@ -100,6 +103,14 @@ public class Blog {
 
 	public LocalDateTime getCreatedDate() {
 		return createdDate;
+	}
+
+	public Tag getTag() {
+		return tag;
+	}
+
+	public void setTag(Tag tag) {
+		this.tag = tag;
 	}
 
 	public static Blog jsonIDEntry(int id) throws NotFoundException {

@@ -2,6 +2,8 @@ package org.projectfk.blog.controller.restful
 
 import org.projectfk.blog.common.*
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AuthorizationServiceException
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -30,5 +32,10 @@ class RestfulExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     fun forbiddenException(exception: ForbiddenException): ExceptionResultBean
             = ExceptionResultBean("Forbidden", exception.message)
+
+    @ExceptionHandler(AuthenticationException::class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    fun authorizationExeption(exception: AuthenticationException): ExceptionResultBean
+            = ExceptionResultBean("Not Authorized", exception.message?: "")
 
 }

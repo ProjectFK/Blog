@@ -49,8 +49,13 @@ class UserController {
 
     @PostMapping("registry")
 //    TODO: Place holder
-    fun createUser(@RequestParam("name") name: String): ResponseEntity<ResultBean<CreatedResponseBody<User>>> {
-        val body = userService.registryNewUser(name, "")
+    fun createUser(
+            @RequestParam("name")
+                name: String,
+            @RequestParam("password", required = false, defaultValue = "")
+                password: String
+    ): ResponseEntity<ResultBean<CreatedResponseBody<User>>> {
+        val body = userService.registryNewUser(name, password)
         return created(URI.create("/user/${body.id}"), body)
     }
 

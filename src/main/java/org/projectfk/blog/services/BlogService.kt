@@ -3,6 +3,7 @@ package org.projectfk.blog.services
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.projectfk.blog.common.IllegalParametersException
+import org.projectfk.blog.common.NotFoundException
 import org.projectfk.blog.data.Blog
 import org.projectfk.blog.data.PostRepo
 import org.projectfk.blog.data.User
@@ -20,7 +21,7 @@ class BlogService {
 
     @PostConstruct
     fun linkToStaticField() {
-        _service.compareAndSet(null, this);
+        _service.compareAndSet(null, this)
     }
 
     fun listAllBlogs(): List<Blog> = repo.findAllByOrderByModifyDateDesc().toList()
@@ -60,7 +61,7 @@ class BlogService {
                 @JsonProperty("id")
                 id: Int
         ): Blog = service.blogByID(id).orElseThrow {
-            IllegalParametersException("there's no such blog with id: $id in database")
+            NotFoundException("there's no such blog with id: $id in database")
         }
 
     }
