@@ -38,4 +38,5 @@ public class BlogApplication implements WebMvcConfigurer {
 				.addResourceLocations("classpath:/static/")
 				.setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS));
 	}
+
 }

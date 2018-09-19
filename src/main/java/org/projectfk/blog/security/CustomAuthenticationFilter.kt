@@ -32,8 +32,8 @@ open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
 
     init {
         setAuthenticationSuccessHandler { _, response, authentication ->
-            response.status = HttpStatus.MOVED_PERMANENTLY.value()
-            response.addHeader("Location", successRedirectTarget)
+            response.status = HttpStatus.OK.value()
+//            response.addHeader("Location", successRedirectTarget)
 
             response.contentType = MediaType.APPLICATION_JSON_UTF8_VALUE
 

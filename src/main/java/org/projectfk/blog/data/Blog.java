@@ -27,11 +27,14 @@ public class Blog {
 			@NotNull
 					String title,
 			@NotNull
-					String content
+                    String content,
+            @NotNull
+                    Tag tag
 	) {
 		this.author = author;
 		this.title = title;
 		this.content = content;
+        this.tag = tag;
 	}
 
 	@JsonProperty(access = READ_ONLY)
@@ -60,8 +63,9 @@ public class Blog {
 	@CreationTimestamp
 	private LocalDateTime createdDate = LocalDateTime.now();
 
-	@Enumerated(EnumType.STRING)
-	private Tag tag = Tag.tech;
+    @JsonProperty
+    @Enumerated(EnumType.STRING)
+    private Tag tag = Tag.tech;
 
 	public int getId() {
 		return id;

@@ -37,6 +37,8 @@ open class SecurityConfig : WebSecurityConfigurerAdapter() {
                 .and()
                 .addFilterAfter(authorizationFilter(), UsernamePasswordAuthenticationFilter::class.java)
                 .csrf().disable()
+
+//        Headers managed in reverse proxy server placed in front of this service
     }
 
     @Bean

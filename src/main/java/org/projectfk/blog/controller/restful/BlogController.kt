@@ -9,12 +9,9 @@ import org.projectfk.blog.services.UserService
 import org.projectfk.blog.services.findUserAsThisIsAnIDName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.annotation.Secured
-import org.springframework.security.access.prepost.PostAuthorize
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import java.lang.IllegalArgumentException
 import java.net.URI
 
 @RestController
@@ -97,7 +94,15 @@ class inputBlogDTO(content: String, title: String, tag: String) : IInputBlogDTO(
 
 class updateBlogDTO(val id: Int, content: String, title: String, tag: String) : IInputBlogDTO(content, title, tag)
 
-fun inputBlogDTO.toBlog(author: User): Blog = Blog(author, this.title, this.content)
+fun inputBlogDTO.toBlog(author: User): Blog {
+    val tag: Tag
+    try {
+        tag = Tag.valueOf(this.tag)
+    } catch (e: IllegalArgumentException) {
+        throw IllegalParametersException("${this.tag} is not a valid tag")
+    }
+    return Blog(author, this.title, this.content, tag)
+}
 
 fun Blog.swap(target: updateBlogDTO): Blog {
     this.content = target.content
