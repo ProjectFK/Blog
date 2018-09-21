@@ -6,7 +6,7 @@ import org.projectfk.blog.data.Tag
 import org.projectfk.blog.data.User
 import org.projectfk.blog.services.BlogService
 import org.projectfk.blog.services.UserService
-import org.projectfk.blog.services.findUserAsThisIsAnIDName
+import org.projectfk.blog.services.supplyNotFound
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -51,13 +51,13 @@ class BlogController {
     @PutMapping
     fun updateBlog(
             @RequestBody
-            blog: updateBlogDTO
+            blog: updateBlogDTO,
+            auth: Authentication
     ): ResultBean<Blog> =
             blogService
                     .blogByID(blog.id)
                     .map {
-                        //                        TODO: User pass from Spring Security
-                        validateUserOrThrow(it, userService.findByID(1).orElse(null))
+                        validateUserOrThrow(it, auth.principal as User)
                         it.swap(blog)
                         blogService.updateBlog(it)
                         ResultBean(it)
@@ -66,25 +66,26 @@ class BlogController {
 
     private fun validateUserOrThrow(blog: Blog, user: User): Blog {
         if (blog.author != user)
-            throw ForbiddenException("operating user do not match blog author")
+            throw ForbiddenException("you do not have permission to edit this post")
         return blog
     }
 
     @GetMapping("/listByAuthor")
     fun listBlogByUser(
             @RequestParam("author")
-            author: Int
-    ): ResultBean<List<Blog>> =
-            ResultBean(
-                    blogService
-                            .blogByAuthor(
-                                    author
-                                            .findUserAsThisIsAnIDName()
-                                            .orElseThrow {
-                                                NotFoundException("user with id: $author do not found")
-                                            }
-                            )
-            )
+            name: String
+    ): ResultBean<List<Blog>> {
+        val author = try {
+            val id = Integer.parseInt(name)
+            userService
+                    .findByID(id)
+                    .orElseThrow { supplyNotFound(id) }
+        } catch (exception: NumberFormatException) {
+            userService
+                    .loadUserByUsername(name)
+        }
+        return ResultBean(blogService.blogByAuthor(author))
+    }
 
 }
 

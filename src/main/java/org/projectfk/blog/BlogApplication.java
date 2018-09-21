@@ -2,7 +2,6 @@ package org.projectfk.blog;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -14,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableAsync
-@PropertySource("classpath:database_config.properties")
+//@PropertySource(value = "classpath:database_config.properties", ignoreResourceNotFound = true)
 public class BlogApplication implements WebMvcConfigurer {
 
 	public static void main(String[] args) {

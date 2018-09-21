@@ -13,7 +13,6 @@
 ### IntelliJ IDEA ###
 .idea
 *.iws
-*.iml
 *.ipr
 
 ### NetBeans ###
@@ -56,3 +55,4 @@ out
 ### secrets ###
 recaptcha_config.properties
 database_config.properties
+ali_oss_config.properties

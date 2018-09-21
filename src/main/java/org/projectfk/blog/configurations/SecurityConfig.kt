@@ -25,6 +25,12 @@ open class SecurityConfig : WebSecurityConfigurerAdapter() {
     @Value("\${login.loginPath}")
     lateinit var loginPath: String
 
+    @Value("\${login.logoutPath}")
+    lateinit var logoutPath: String
+
+    @Value("\${login.logoutSuccessRedirect}")
+    lateinit var logoutSuccessRedirect: String
+
     @Autowired
     lateinit var userService: UserService
 
@@ -32,10 +38,13 @@ open class SecurityConfig : WebSecurityConfigurerAdapter() {
         http
                 .authorizeRequests()
                     .antMatchers(loginPath).anonymous()
-                    .antMatchers("/test").authenticated()
-                .anyRequest().anonymous()
+                .anyRequest().permitAll()
                 .and()
                 .addFilterAfter(authorizationFilter(), UsernamePasswordAuthenticationFilter::class.java)
+                .logout()
+                .logoutUrl(logoutPath)
+                .logoutSuccessUrl(logoutSuccessRedirect)
+                .and()
                 .csrf().disable()
 
 //        Headers managed in reverse proxy server placed in front of this service
