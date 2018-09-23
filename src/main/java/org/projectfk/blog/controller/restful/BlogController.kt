@@ -25,10 +25,10 @@ open class BlogController {
     private lateinit var userService: UserService
 
     @GetMapping
-    fun getAll(): ResultBean<List<Blog>> = ResultBean(blogService.listAllBlogs())
+    open fun getAll(): ResultBean<List<Blog>> = ResultBean(blogService.listAllBlogs())
 
-    @GetMapping("/{id:[0-9]}")
-    fun getByID(@PathVariable("id") id: Int): ResultBean<Blog> {
+    @GetMapping("{id:[0-9]}")
+    open fun getByID(@PathVariable("id") id: Int): ResultBean<Blog> {
         if (id <= 0) throw IllegalParametersException("id should not be smaller than 0 or equals 1")
         val result = blogService.blogByID(id)
         if (result.isPresent) return ResultBean(result.get())
@@ -36,10 +36,10 @@ open class BlogController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping
+    @PostMapping()
     open fun createBlog(
             @RequestBody
-            blog: inputBlogDTO,
+            blog: InputBlogDTO,
             auth: Authentication
     ): ResponseEntity<ResultBean<CreatedResponseBody<Blog>>> {
         val result = blogService.createBlog(blog.toBlog(auth.principal as User))
@@ -48,21 +48,23 @@ open class BlogController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PutMapping
+    @PutMapping("{id:[0-9]}")
     open fun updateBlog(
             @RequestBody
-            blog: updateBlogDTO,
+            blog: InputBlogDTO,
+            @PathVariable("id")
+            id: Int,
             auth: Authentication
     ): ResultBean<Blog> =
             blogService
-                    .blogByID(blog.id)
+                    .blogByID(id)
                     .map {
                         validateUserOrThrow(it, auth.principal as User)
                         it.swap(blog)
                         blogService.updateBlog(it)
                         ResultBean(it)
                     }
-                    .orElseThrow { NotFoundException("not found blog with id: ${blog.id}") }
+                    .orElseThrow { NotFoundException("not found blog with id: $id") }
 
     private fun validateUserOrThrow(blog: Blog, user: User): Blog {
         if (blog.author != user)
@@ -70,8 +72,23 @@ open class BlogController {
         return blog
     }
 
-    @GetMapping("/listByAuthor")
-    fun listBlogByUser(
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("{id:[0-9]}")
+    open fun deleteBlogByID(
+            @PathVariable("id")
+            id: Int,
+            auth: Authentication
+    ): ResultBean<Blog> {
+        val blog = getByID(id).result!!
+        validateUserOrThrow(blog, auth.principal as User)
+        val deleted = blogService
+                .deleteBlogByID(id)
+                .orElseThrow { throw NotFoundException("Blog with id: $id not found") }
+        return ResultBean(deleted)
+    }
+
+    @GetMapping("listByAuthor")
+    open fun listBlogByUser(
             @RequestParam("author")
             name: String
     ): ResultBean<List<Blog>> {
@@ -89,13 +106,9 @@ open class BlogController {
 
 }
 
-sealed class IInputBlogDTO(val content: String, val title: String, val tag: String)
+class InputBlogDTO(val content: String, val title: String, val tag: String)
 
-class inputBlogDTO(content: String, title: String, tag: String) : IInputBlogDTO(content, title, tag)
-
-class updateBlogDTO(val id: Int, content: String, title: String, tag: String) : IInputBlogDTO(content, title, tag)
-
-fun inputBlogDTO.toBlog(author: User): Blog {
+fun InputBlogDTO.toBlog(author: User): Blog {
     val tag: Tag
     try {
         tag = Tag.valueOf(this.tag)
@@ -105,7 +118,7 @@ fun inputBlogDTO.toBlog(author: User): Blog {
     return Blog(author, this.title, this.content, tag)
 }
 
-fun Blog.swap(target: updateBlogDTO): Blog {
+fun Blog.swap(target: InputBlogDTO): Blog {
     this.content = target.content
     this.title = target.title
     try {

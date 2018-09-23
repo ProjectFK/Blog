@@ -2,6 +2,7 @@ package org.projectfk.blog.data
 
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
+import java.util.*
 
 interface UserRepo : CrudRepository<User, Int> {
 
@@ -10,10 +11,12 @@ interface UserRepo : CrudRepository<User, Int> {
 }
 
 @Repository
-interface PostRepo : CrudRepository<Blog, Int> {
+interface BlogRepo : CrudRepository<Blog, Int> {
 
     fun findByAuthor(user: User) : Iterable<Blog>
 
     fun findAllByOrderByModifyDateDesc(): List<Blog>
+
+    fun deleteByid(id: Int): Optional<Blog>
 
 }

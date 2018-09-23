@@ -3,6 +3,7 @@ package org.projectfk.blog.controller.restful
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import org.projectfk.blog.common.*
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler

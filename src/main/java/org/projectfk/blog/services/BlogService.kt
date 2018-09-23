@@ -2,10 +2,9 @@ package org.projectfk.blog.services
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.projectfk.blog.common.IllegalParametersException
 import org.projectfk.blog.common.NotFoundException
 import org.projectfk.blog.data.Blog
-import org.projectfk.blog.data.PostRepo
+import org.projectfk.blog.data.BlogRepo
 import org.projectfk.blog.data.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -17,7 +16,7 @@ import javax.annotation.PostConstruct
 class BlogService {
 
     @Autowired
-    private lateinit var repo: PostRepo
+    private lateinit var repo: BlogRepo
 
     @PostConstruct
     fun linkToStaticField() {
@@ -33,6 +32,8 @@ class BlogService {
     fun blogByID(id: Int): Optional<Blog> = repo.findById(id)
 
     fun blogByAuthor(author: User): List<Blog> = repo.findByAuthor(author).toList()
+
+    fun deleteBlogByID(id: Int): Optional<Blog> = repo.deleteByid(id)
 
     fun createBlog(content: Blog): Blog {
         assert(!content.alreadyLoaded())
