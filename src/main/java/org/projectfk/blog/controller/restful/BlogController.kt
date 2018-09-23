@@ -16,7 +16,7 @@ import java.net.URI
 
 @RestController
 @RequestMapping("api/blog/")
-class BlogController {
+open class BlogController {
 
     @Autowired
     private lateinit var blogService: BlogService
@@ -37,7 +37,7 @@ class BlogController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    fun createBlog(
+    open fun createBlog(
             @RequestBody
             blog: inputBlogDTO,
             auth: Authentication
@@ -49,7 +49,7 @@ class BlogController {
 
     @PreAuthorize("isAuthenticated()")
     @PutMapping
-    fun updateBlog(
+    open fun updateBlog(
             @RequestBody
             blog: updateBlogDTO,
             auth: Authentication

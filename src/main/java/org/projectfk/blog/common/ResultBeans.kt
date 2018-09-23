@@ -14,23 +14,13 @@ import java.net.URI
 @JsonPropertyOrder("state", "message", "result")
 @JsonInclude(Include.NON_NULL)
 open class ResultBean<T>(
-        result: T?,
+        @field:JsonProperty @field:JsonInclude(Include.NON_NULL) val result: T?,
 
         @field:JsonProperty
         val message: String? = null,
 
-        state: State = SuccessState
-) : Serializable {
-
-    @JsonProperty
-    @field:JsonInclude(Include.NON_NULL)
-    val result = result
-
-    @JsonUnwrapped
-    @JsonProperty
-    val state = state
-
-}
+        @field:JsonUnwrapped @field:JsonProperty val state: State = SuccessState
+) : Serializable
 
 @JsonPropertyOrder("state", "state_message")
 sealed class State(
@@ -55,7 +45,7 @@ private class CreatedState(
 ) : State("success", "created")
 
 @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
-object ErrorState : State("failed", "Internal Error (whaaaaaaaaaat!)")
+object ErrorState : State("failed", "Internal Error")
 
 fun <T> created(
         uri: URI,
@@ -70,7 +60,7 @@ class CreatedResponseBody<T> internal constructor(
 )
 
 @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-object BadRequestState : State("failed", "bad request")
+object BadRequestState : State("failed", "Bad Request")
 
 class ExceptionResultBean(
         message: String = "Exception occured, process failed",

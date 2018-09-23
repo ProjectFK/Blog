@@ -15,7 +15,7 @@ import java.net.URI
 
 @RestController
 @RequestMapping("api/user/")
-class UserController {
+open class UserController {
 
     @Autowired
     private lateinit var userService: UserService

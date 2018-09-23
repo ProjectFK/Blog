@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.MethodNotAllowedException
 
 @RestController
-@ControllerAdvice("org.projectfk.blog.controller.restful")
+@ControllerAdvice(annotations = [RestController::class])
 class RestfulExceptionHandler {
 
     @ExceptionHandler(NotFoundException::class)
@@ -19,32 +19,23 @@ class RestfulExceptionHandler {
     fun notFound(exception: NotFoundException): ExceptionResultBean
             = ExceptionResultBean("Requested information not found", exception.message)
 
-    @ExceptionHandler(IllegalParametersException::class)
+    @ExceptionHandler(
+            BadRequestException::class,
+            MethodNotAllowedException::class,
+            MismatchedInputException::class,
+            IllegalParametersException::class
+    )
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun illegalParameters(exception: IllegalParametersException): ExceptionResultBean
-            = ExceptionResultBean("Illegal Parameter(s)", exception.message)
+    fun badRequest(exception: Exception): ExceptionResultBean = ExceptionResultBean("Bad Request", exception.message
+            ?: "")
 
-    @ExceptionHandler(BadRequestException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun badRequest(exception: BadRequestException): ExceptionResultBean
-            = ExceptionResultBean("Bad Request", exception.message)
-
-    @ExceptionHandler(ForbiddenException::class)
+    @ExceptionHandler(
+            ForbiddenException::class,
+            AuthenticationException::class,
+            AccessDeniedException::class
+    )
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    fun forbiddenException(exception: ForbiddenException): ExceptionResultBean
-            = ExceptionResultBean("Forbidden", exception.message)
-
-    @ExceptionHandler(AuthenticationException::class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    fun authorizationExeption(exception: AuthenticationException): ExceptionResultBean
-            = ExceptionResultBean("Not Authorized", exception.message?: "")
-
-    @ExceptionHandler(MismatchedInputException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun MismatchedInputException(exception: MismatchedInputException): ExceptionResultBean = ExceptionResultBean("Bad Request")
-
-    @ExceptionHandler(MethodNotAllowedException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun methodNotAllowed(exception: MethodNotAllowedException): ExceptionResultBean = ExceptionResultBean("Bad Request")
+    fun forbiddenException(exception: Exception): ExceptionResultBean = ExceptionResultBean("Forbidden", exception.message
+            ?: "")
 
 }
