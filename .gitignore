@@ -13,12 +13,11 @@
 ### IntelliJ IDEA ###
 .idea
 *.iws
-*.iml
 *.ipr
 
 ### NetBeans ###
 /nbproject/private/
-/build/
+/parser/
 /nbbuild/
 /dist/
 /nbdist/
@@ -48,3 +47,12 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+### Gradle output ###
+build
+.gradle
+out
+
+### secrets ###
+recaptcha_config.properties
+database_config.properties
+ali_oss_config.properties
