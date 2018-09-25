@@ -1,6 +1,7 @@
 plugins {
     id "org.jetbrains.kotlin.jvm" version "1.2.61"
     id 'org.springframework.boot' version '2.0.4.RELEASE'
+
 }
 
 apply plugin: 'java'
@@ -55,8 +56,17 @@ dependencies {
     runtime group: 'com.h2database', name: 'h2', version: '1.4.197'
     compile group: 'org.hibernate', name: 'hibernate-java8', version: '5.3.6.Final'
 
-//    testing dependency that I don't actual care
-    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.2.RELEASE'
+//    Ali OSS
+    compile group: 'com.aliyun.oss', name: 'aliyun-sdk-oss', version: '3.3.0'
+
+//    Ali STS
+    compile group: 'com.aliyun', name: 'aliyun-java-sdk-sts', version: '3.0.0'
+
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.1'
+    testCompile group: 'org.junit.jupiter', name:'junit-jupiter-params', version:'5.3.1'
+    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.1'
+
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: spring_version
     testCompile group: 'org.springframework.security', name: 'spring-security-test', version: '5.0.5.RELEASE'
     testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: kotlin_version
 }
@@ -65,6 +75,10 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = '1.8'
         apiVersion = '1.1'
-        languageVersion = '1.1'
+        languageVersion = "1.2"
     }
+}
+
+test {
+    useJUnitPlatform()
 }
