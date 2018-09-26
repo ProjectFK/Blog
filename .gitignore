@@ -55,4 +55,6 @@ out
 ### secrets ###
 recaptcha_config.properties
 database_config.properties
-ali_oss_config.properties
+ali_config.properties
+
+src/main/resources/static/
