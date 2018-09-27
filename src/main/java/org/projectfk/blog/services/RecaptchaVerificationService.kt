@@ -12,15 +12,14 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForObject
-import java.lang.Error
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @Service
 @PropertySource("classpath:recaptcha_config.properties")
-open class RecaptchaVerifyService {
+open class RecaptchaVerificationService {
 
-    private val logger = LogFactory.getLog(RecaptchaVerifyService::class.java)!!
+    private val logger = LogFactory.getLog(RecaptchaVerificationService::class.java)!!
 
     private val validateURL by lazy {
         "https://www.recaptcha.net/recaptcha/api/siteverify?secret=${site_key}&response=%s"

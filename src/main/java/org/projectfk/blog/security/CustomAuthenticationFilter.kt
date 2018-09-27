@@ -8,7 +8,7 @@ import org.projectfk.blog.common.ResultBean
 import org.projectfk.blog.common.debugIfEnable
 import org.projectfk.blog.data.User
 import org.projectfk.blog.services.RecaptchaFatal
-import org.projectfk.blog.services.RecaptchaVerifyService
+import org.projectfk.blog.services.RecaptchaVerificationService
 import org.projectfk.blog.services.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -89,7 +89,7 @@ open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
     private lateinit var objectMapper: ObjectMapper
 
     @Autowired
-    private lateinit var verifyService: RecaptchaVerifyService
+    private lateinit var verificationService: RecaptchaVerificationService
 
     private val LOG = LogFactory.getLog(CustomAuthenticationFilter::class.java)!!
 
@@ -117,7 +117,7 @@ open class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
 
         val validate: CompletableFuture<Pair<Boolean, String>>
 
-        if (enableRecaptcha) validate = verifyService.validate(body.recaptcha_token)
+        if (enableRecaptcha) validate = verificationService.validate(body.recaptcha_token)
         else validate = CompletableFuture.completedFuture(true to "Skiped recaptcha by configuration")
 
         val token = UsernamePasswordAuthenticationToken(name, password)

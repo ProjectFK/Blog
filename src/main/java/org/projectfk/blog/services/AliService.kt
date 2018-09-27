@@ -10,6 +10,7 @@ import com.aliyuncs.sts.model.v20150401.AssumeRoleRequest
 import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse
 import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -70,8 +71,11 @@ open class STSService {
         return CompletableFuture.supplyAsync { acsClient.getAcsResponse(assumeRoleRequest) }
     }
 
-    private fun policyGen(policies: List<STSPolicyStatement>): String =
-            ObjectMapper().writeValueAsString((Policy(policies)))
+    private fun policyGen(policies: List<STSPolicyStatement>): String {
+        val policy = ObjectMapper().writeValueAsString((Policy(policies)))
+        println(policy)
+        return policy
+    }
 
     class STSPolicyStatement(
             @get:JsonGetter("Action")
@@ -88,6 +92,39 @@ open class STSService {
             val statement: List<STSPolicyStatement>) {
         @get:JsonGetter("Version")
         val version = "1"
+    }
+
+}
+
+@Service
+class OSSTSService {
+
+    @Autowired
+    private lateinit var stsService: STSService
+
+    fun obtainSTS(
+            name: String,
+            action: String = "putObject",
+            bucketWithPath: Array<String>
+    ): CompletableFuture<AssumeRoleResponse> {
+        return stsService
+                .requestUploadOSSSTS(
+                        name,
+                        generatePolicyForOSS(action, bucketWithPath)
+                )
+    }
+
+    fun generatePolicyForOSS(action: String, bucketWithPath: Array<String>): List<STSService.STSPolicyStatement> {
+        return listOf(
+                STSService.STSPolicyStatement(
+                        action = arrayOf("oss:$action"),
+                        resource = bucketWithPath
+                                .asSequence()
+                                .map { a -> "acs:oss:*:*:$a" }
+                                .toList()
+                                .toTypedArray()
+                )
+        )
     }
 
 }
