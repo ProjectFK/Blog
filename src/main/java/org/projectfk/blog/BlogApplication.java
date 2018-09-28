@@ -2,14 +2,10 @@ package org.projectfk.blog;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableAsync
@@ -28,14 +24,6 @@ public class BlogApplication implements WebMvcConfigurer {
 		configurer
 				.defaultContentType(MediaType.APPLICATION_JSON)
 				.ignoreAcceptHeader(false);
-	}
-
-	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry
-				.addResourceHandler("/**")
-				.addResourceLocations("classpath:/static/")
-				.setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS));
 	}
 
 }

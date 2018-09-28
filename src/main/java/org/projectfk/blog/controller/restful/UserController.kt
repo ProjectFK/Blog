@@ -1,7 +1,6 @@
 package org.projectfk.blog.controller.restful
 
 import org.projectfk.blog.common.CreatedResponseBody
-import org.projectfk.blog.common.NotFoundException
 import org.projectfk.blog.common.ResultBean
 import org.projectfk.blog.common.created
 import org.projectfk.blog.data.User
@@ -9,7 +8,6 @@ import org.projectfk.blog.services.UserService
 import org.projectfk.blog.services.supplyNotFound
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -38,12 +36,8 @@ open class UserController {
             throw supplyNotFound(name)
 
         return ResultBean(
-                try {
-                    userService
-                            .loadUserByUsername(name)
-                } catch (e: UsernameNotFoundException) {
-                    throw NotFoundException(e.message!!)
-                }
+                userService
+                        .loadUserByUsername(name)
         )
     }
 

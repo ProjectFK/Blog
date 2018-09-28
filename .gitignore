@@ -1,5 +1,4 @@
 /target/
-!.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
 .apt_generated
@@ -58,3 +57,5 @@ database_config.properties
 ali_config.properties
 
 src/main/resources/static/
+
+!gradle/wrapper/gradle-wrapper.jar

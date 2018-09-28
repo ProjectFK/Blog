@@ -15,6 +15,6 @@ class OSSTSServiceTest {
 
     @Test
     fun obtainSTS() {
-        println(service.obtainSTS("test", bucketWithPath = arrayOf("somethinglalala/")).get())
+        service.obtainSTS("test", bucketWithPath = arrayOf("somethinglalala/")).get()
     }
 }

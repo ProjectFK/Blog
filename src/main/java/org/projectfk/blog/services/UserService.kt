@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
 import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.*
@@ -40,7 +41,7 @@ class UserService : UserDetailsService {
         logger.debugIfEnable { "loading user with user name: $username" }
         val users = userRepo.findByUsername(username).iterator()
         if (!users.hasNext()) {
-            val notFoundException = supplyNotFound(username)
+            val notFoundException = UsernameNotFoundException("User with username: $username not found")
             logger.debugIfEnable(notFoundException) { "user $username do not found" }
             throw notFoundException
         }

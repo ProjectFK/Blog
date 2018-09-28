@@ -5,6 +5,7 @@ import org.projectfk.blog.common.*
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.AuthenticationException
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -15,10 +16,12 @@ import org.springframework.web.server.MethodNotAllowedException
 @ControllerAdvice(annotations = [RestController::class])
 class RestfulExceptionHandler {
 
-    @ExceptionHandler(NotFoundException::class)
+    @ExceptionHandler(
+            NotFoundException::class,
+            UsernameNotFoundException::class
+    )
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    fun notFound(exception: NotFoundException): ExceptionResultBean
-            = ExceptionResultBean("Requested information not found", exception.message)
+    fun notFound(exception: NotFoundException): ExceptionResultBean = ExceptionResultBean("Requested information not found", exception.message)
 
     @ExceptionHandler(
             BadRequestException::class,
