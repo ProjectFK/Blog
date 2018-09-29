@@ -71,11 +71,8 @@ open class STSService {
         return CompletableFuture.supplyAsync { acsClient.getAcsResponse(assumeRoleRequest) }
     }
 
-    private fun policyGen(policies: List<STSPolicyStatement>): String {
-        val policy = ObjectMapper().writeValueAsString((Policy(policies)))
-        println(policy)
-        return policy
-    }
+    private fun policyGen(policies: List<STSPolicyStatement>) =
+            ObjectMapper().writeValueAsString((Policy(policies)))
 
     class STSPolicyStatement(
             @get:JsonGetter("Action")
@@ -97,14 +94,14 @@ open class STSService {
 }
 
 @Service
-class OSSTSService {
+class OSSSTSService {
 
     @Autowired
     private lateinit var stsService: STSService
 
     fun obtainSTS(
             name: String,
-            action: String = "putObject",
+            action: String = "PutBucket",
             bucketWithPath: Array<String>
     ): CompletableFuture<AssumeRoleResponse> {
         return stsService

@@ -4,6 +4,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 
+@Repository
 interface UserRepo : CrudRepository<User, Int> {
 
     fun findByUsername(name: String): Iterable<User>
@@ -20,3 +21,9 @@ interface BlogRepo : CrudRepository<Blog, Int> {
     fun deleteByid(id: Int): Optional<Blog>
 
 }
+
+@Repository
+interface AttachmentRepo : CrudRepository<Attachment, String>
+
+@Repository
+interface TempUploadRequestsRepo : CrudRepository<TempUploadRequests, String>

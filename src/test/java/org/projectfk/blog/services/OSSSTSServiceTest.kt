@@ -8,13 +8,16 @@ import org.springframework.test.context.junit4.SpringRunner
 
 @RunWith(SpringRunner::class)
 @SpringBootTest
-class OSSTSServiceTest {
+class OSSSTSServiceTest {
 
     @Autowired
-    private lateinit var service: OSSTSService
+    private lateinit var service: OSSSTSService
 
     @Test
     fun obtainSTS() {
-        service.obtainSTS("test", bucketWithPath = arrayOf("somethinglalala/")).get()
+        val get = service.obtainSTS("test", bucketWithPath = arrayOf("somethinglalala/")).get()
+        println("ak:" + get.credentials.accessKeyId)
+        println("as:" + get.credentials.accessKeySecret)
+        println("security token:" + get.credentials.securityToken)
     }
 }
