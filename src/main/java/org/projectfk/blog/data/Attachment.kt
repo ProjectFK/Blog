@@ -8,8 +8,9 @@ import javax.persistence.*
 class Attachment(
         @Column(nullable = false)
         val fileName: String,
-        @Column(nullable = false, length = 5)
-        val region: String,
+
+        @ManyToOne
+        val region: StorageRegion,
 
         @JoinColumn(name = "user")
         @ManyToOne

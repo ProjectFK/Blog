@@ -18,6 +18,7 @@ import org.springframework.context.annotation.PropertySource
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+import java.util.regex.Pattern
 
 @PropertySource("classpath:ali_config.properties")
 @Configuration
@@ -61,8 +62,12 @@ open class STSService {
         DefaultAcsClient(profile)
     }
 
+    private val roleSessionNameRegex = Pattern.compile("^[a-zA-Z0-9.@\\-_].{0,32}\$")
+
     @Async
     open fun requestUploadOSSSTS(name: String, policy: List<STSPolicyStatement>): CompletableFuture<AssumeRoleResponse> {
+        if (!roleSessionNameRegex.matcher(name).matches())
+            throw IllegalArgumentException("role session name do not match requirement. Input: $name")
         val assumeRoleRequest = AssumeRoleRequest()
         assumeRoleRequest.method = MethodType.POST
         assumeRoleRequest.roleArn = roleArn

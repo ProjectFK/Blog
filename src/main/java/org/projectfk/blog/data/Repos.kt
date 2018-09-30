@@ -26,4 +26,4 @@ interface BlogRepo : CrudRepository<Blog, Int> {
 interface AttachmentRepo : CrudRepository<Attachment, String>
 
 @Repository
-interface TempUploadRequestsRepo : CrudRepository<TempUploadRequests, String>
+interface StorageRegionRepo: CrudRepository<StorageRegion, String>
