@@ -18,7 +18,7 @@ Provide your own<br>
 - database_config.properties (your own database setting)
 - recaptcha_config.properties (your own recaptcha token)<br>
 
-Than
+Then
 
 `gradlew run`  <br>(Might take a lot time to download dependency)
 
