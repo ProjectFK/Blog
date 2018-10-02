@@ -23,7 +23,11 @@ interface BlogRepo : CrudRepository<Blog, Int> {
 }
 
 @Repository
-interface AttachmentRepo : CrudRepository<Attachment, String>
+interface AttachmentRepo : CrudRepository<Attachment, String> {
+
+    fun findByRegion(region: StorageRegion): List<Attachment>
+
+}
 
 @Repository
 interface StorageRegionRepo: CrudRepository<StorageRegion, String>

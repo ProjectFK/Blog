@@ -10,11 +10,7 @@ class Attachment(
         val fileName: String,
 
         @ManyToOne
-        val region: StorageRegion,
-
-        @JoinColumn(name = "user")
-        @ManyToOne
-        val user: User
+        val region: StorageRegion
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -25,7 +25,9 @@ class BlogService {
 
     fun listAllBlogs(): List<Blog> = repo.findAllByOrderByModifyDateDesc().toList()
 
-    private fun saveBlog(content: Blog): Blog = repo.save(content)
+    private fun saveBlog(content: Blog): Blog {
+        return repo.save(content)
+    }
 
     fun delete(blog: Blog): Unit = repo.delete(blog)
 
