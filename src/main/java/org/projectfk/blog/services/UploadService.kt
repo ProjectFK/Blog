@@ -7,13 +7,11 @@ import org.projectfk.blog.data.StorageRegionRepo
 import org.projectfk.blog.data.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-@PropertySource("classpath:common_settings_config.properties")
 @Service
 class UploadService {
 

@@ -10,7 +10,6 @@ import org.projectfk.blog.data.User
 import org.projectfk.blog.data.UserRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.PropertySource
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-@PropertySource("classpath:common_settings_config.properties")
 class UserService : UserDetailsService {
 
     private val logger: Log by lazy { LogFactory.getLog(UserService::class.java) }
@@ -99,10 +97,10 @@ class UserService : UserDetailsService {
                     passwordCheckRegex = Regex(UserService._passwordCheckRegex)
                 }
             }
-            if (usingRegex!!) {
-                return passwordCheckRegex!!.matches(pwd)
+            return if (usingRegex!!) {
+                passwordCheckRegex!!.matches(pwd)
             } else {
-                return true
+                true
             }
         }
 
@@ -110,10 +108,6 @@ class UserService : UserDetailsService {
 
 }
 
-fun Int.findUserAsThisIsAnIDName(): Optional<User> = UserService.UserService.findByID(this)
+fun supplyNotFound(name: String): NotFoundException = NotFoundException("User with username: $name not found")
 
-fun supplyNotFound(name: String): NotFoundException
-    = NotFoundException("User with username: $name not found")
-
-fun supplyNotFound(id: Int): NotFoundException
-    = NotFoundException("User with id: $id not found")
+fun supplyNotFound(id: Int): NotFoundException = NotFoundException("User with id: $id not found")

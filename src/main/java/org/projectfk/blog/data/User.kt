@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.projectfk.blog.common.IllegalParametersException
 import org.projectfk.blog.common.NotFoundException
 import org.projectfk.blog.services.UserService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
@@ -55,6 +56,17 @@ class User : Serializable, UserDetails {
     @Column(columnDefinition = "CHAR(60)")
     @JsonIgnore
     private val password: String
+
+    @Column(name = "avatarPath")
+    @JsonIgnore
+    private val _avatarPath: String? = null
+
+    @Value("\${avatar.default}")
+    @JsonIgnore
+    private lateinit var defaultAvatarPath: String
+
+    val avatarPath: String
+        get() = _avatarPath ?: defaultAvatarPath
 
     @JsonIgnore
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableListOf()
