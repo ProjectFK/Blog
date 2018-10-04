@@ -47,6 +47,7 @@ open class SecurityConfig : WebSecurityConfigurerAdapter() {
                 .logoutSuccessUrl(logoutSuccessRedirect)
                 .and()
                 .csrf().disable()
+                .headers().frameOptions().disable()
 
 //        Headers managed in reverse proxy server placed in front of this service
     }

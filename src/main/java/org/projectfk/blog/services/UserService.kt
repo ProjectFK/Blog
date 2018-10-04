@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.net.URI
 import java.util.*
 
 @Service
@@ -21,14 +22,17 @@ class UserService : UserDetailsService {
 
     private val logger: Log by lazy { LogFactory.getLog(UserService::class.java) }
 
+    @Value("\${avatar.default}")
+    lateinit var defaultAvatarPath: String
+
     @Autowired
     private lateinit var userRepo: UserRepo
 
     @Autowired
-    private lateinit var passwordEncoder: PasswordEncoder
+    lateinit var passwordEncoder: PasswordEncoder
 
     init {
-        UserService = this
+        INSTANCE = this
     }
 
     fun findByID(id: Int): Optional<User> = userRepo.findById(id)
@@ -70,6 +74,10 @@ class UserService : UserDetailsService {
         return saveUser(user)
     }
 
+    fun updateUserProfile(userProfile: UserProfile): User {
+        TODO("Unfinished")
+    }
+
     @Value("\${user.password.check.regexp}")
     private lateinit var _passwordCheckRegex: String
 
@@ -80,7 +88,7 @@ class UserService : UserDetailsService {
          * Expose for Jackson User Deserialize Entry
          */
         @JvmStatic
-        lateinit var UserService: UserService
+        lateinit var INSTANCE: UserService
             private set
 
         fun validateUserName(name: String): Boolean = name.length in 2..20
@@ -90,11 +98,11 @@ class UserService : UserDetailsService {
 
         fun validatePassword(pwd: String): Boolean {
             if (usingRegex == null) {
-                if (UserService._passwordCheckRegex.equals("false", true)) {
+                if (INSTANCE._passwordCheckRegex.equals("false", true)) {
                     usingRegex = false
                 } else {
                     usingRegex = true
-                    passwordCheckRegex = Regex(UserService._passwordCheckRegex)
+                    passwordCheckRegex = Regex(INSTANCE._passwordCheckRegex)
                 }
             }
             return if (usingRegex!!) {
@@ -106,6 +114,27 @@ class UserService : UserDetailsService {
 
     }
 
+}
+
+class UserProfile {
+    val origin: User
+    val passwordEncoded: String?
+    val username: String?
+    val avatar: URI?
+
+    constructor(origin: User, passwordEncoded: String? = null, username: String? = null, avatar: URI? = null) {
+        this.origin = origin
+
+        if (passwordEncoded == null || UserService.INSTANCE.passwordEncoder.matches(passwordEncoded, origin.password))
+            this.passwordEncoded = null
+        else this.passwordEncoded = passwordEncoded
+
+        if (username != null && origin.username !== username) this.username = username
+        else this.username = null;
+
+        if (avatar != null && origin.avatarPath != avatar.rawPath) this.avatar = avatar
+        else this.avatar = null
+    }
 }
 
 fun supplyNotFound(name: String): NotFoundException = NotFoundException("User with username: $name not found")

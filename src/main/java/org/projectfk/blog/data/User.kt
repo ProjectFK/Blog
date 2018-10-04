@@ -7,8 +7,8 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import org.hibernate.annotations.CreationTimestamp
 import org.projectfk.blog.common.IllegalParametersException
 import org.projectfk.blog.common.NotFoundException
+import org.projectfk.blog.services.UserProfile
 import org.projectfk.blog.services.UserService
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
@@ -51,7 +51,7 @@ class User : Serializable, UserDetails {
     private var isEnable = true
 
     @Column
-    private val username: String
+    private var username: String
 
     @Column(columnDefinition = "CHAR(60)")
     @JsonIgnore
@@ -59,14 +59,10 @@ class User : Serializable, UserDetails {
 
     @Column(name = "avatarPath")
     @JsonIgnore
-    private val _avatarPath: String? = null
-
-    @Value("\${avatar.default}")
-    @JsonIgnore
-    private lateinit var defaultAvatarPath: String
+    private var _avatarPath: String? = null
 
     val avatarPath: String
-        get() = _avatarPath ?: defaultAvatarPath
+        get() = _avatarPath ?: UserService.INSTANCE.defaultAvatarPath
 
     @JsonIgnore
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableListOf()
@@ -93,12 +89,22 @@ class User : Serializable, UserDetails {
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
         if (other !is User) return false
+//        Inject from hibernate
         if (other.id != 0) return this.id == other.id
         return this.username == other.username
     }
 
     override fun hashCode(): Int {
         return username.hashCode()
+    }
+
+    fun exchange(profile: UserProfile): User {
+        if (profile.username != null)
+            this.username = profile.username
+        if (profile.avatar != null)
+            this._avatarPath = profile.avatar.toString()
+        if (profile.passwordEncoded != null)
+            this.password = profile.passwordEncoded
     }
 
     companion object {
@@ -109,7 +115,7 @@ class User : Serializable, UserDetails {
                 id: Int
         ): User {
             if (id < 0) throw IllegalParametersException("invalid id")
-            return UserService.UserService.findByID(id).orElseThrow {
+            return UserService.INSTANCE.findByID(id).orElseThrow {
                 IllegalParametersException("there's no such user with id: $id in database")
             }
         }
@@ -119,7 +125,7 @@ class User : Serializable, UserDetails {
         @Throws(NotFoundException::class)
         fun JsonIDEntry(
                 id: String
-        ): User = UserService.UserService.loadUserByUsername(id)
+        ): User = UserService.INSTANCE.loadUserByUsername(id)
 
     }
 
