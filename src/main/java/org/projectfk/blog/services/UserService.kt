@@ -6,6 +6,7 @@ import org.projectfk.blog.common.ForbiddenException
 import org.projectfk.blog.common.IllegalParametersException
 import org.projectfk.blog.common.NotFoundException
 import org.projectfk.blog.common.debugIfEnable
+import org.projectfk.blog.data.Attachment
 import org.projectfk.blog.data.User
 import org.projectfk.blog.data.UserRepo
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,7 +30,7 @@ class UserService : UserDetailsService {
     private lateinit var userRepo: UserRepo
 
     @Autowired
-    lateinit var passwordEncoder: PasswordEncoder
+    private lateinit var passwordEncoder: PasswordEncoder
 
     init {
         INSTANCE = this
@@ -57,6 +58,18 @@ class UserService : UserDetailsService {
         return value
     }
 
+    fun checkAndEncodePassword(password: String): String {
+        if (!validatePassword(password))
+            throw IllegalParametersException("Password do not match requirement")
+        return passwordEncoder.encode(password)
+    }
+
+    fun rawPasswordMatches(rawPassword: String, target: String): Boolean {
+        if (!validatePassword(target))
+            return false
+        return passwordEncoder.matches(rawPassword, target)
+    }
+
     /**
      * Registry a new User
      * @throws IllegalParametersException when parameter given do not match requirement
@@ -75,7 +88,8 @@ class UserService : UserDetailsService {
     }
 
     fun updateUserProfile(userProfile: UserProfile): User {
-        TODO("Unfinished")
+        val user = findByID(userProfile.origin.id)
+        TODO("waiting for avatar service")
     }
 
     @Value("\${user.password.check.regexp}")
@@ -116,24 +130,30 @@ class UserService : UserDetailsService {
 
 }
 
-class UserProfile {
-    val origin: User
-    val passwordEncoded: String?
-    val username: String?
-    val avatar: URI?
+class UserProfile(val origin: User, password: String? = null, username: String? = null, avatar: Attachment? = null) {
+    val passwordEncoded: String? = null
+    val username: String? = null
+    val avatar: URI? = null
 
-    constructor(origin: User, passwordEncoded: String? = null, username: String? = null, avatar: URI? = null) {
-        this.origin = origin
+    init {
+        if (username != null && origin.username !== username) {
+            if (!UserService.validateUserName(username))
+                throw IllegalParametersException("Password do not match requirement")
+//            this.username = username
+        } else {
+//            this.username = null
+        }
 
-        if (passwordEncoded == null || UserService.INSTANCE.passwordEncoder.matches(passwordEncoded, origin.password))
-            this.passwordEncoded = null
-        else this.passwordEncoded = passwordEncoded
+        if (password == null || UserService.INSTANCE.rawPasswordMatches(origin.password, password))
+//            this.passwordEncoded = null
+        else
+//            this.passwordEncoded = UserService.INSTANCE.checkAndEncodePassword(password)
 
-        if (username != null && origin.username !== username) this.username = username
-        else this.username = null;
-
-        if (avatar != null && origin.avatarPath != avatar.rawPath) this.avatar = avatar
-        else this.avatar = null
+        TODO("WAITING FOR AVATAR TO FINISH")
+//        if (avatar != null && origin.avatarPath != avatar.rawPath)
+//            this.avatar = avatar
+//        else
+//            this.avatar = null
     }
 }
 

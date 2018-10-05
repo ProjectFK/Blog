@@ -55,7 +55,7 @@ class User : Serializable, UserDetails {
 
     @Column(columnDefinition = "CHAR(60)")
     @JsonIgnore
-    private val password: String
+    private var password: String
 
     @Column(name = "avatarPath")
     @JsonIgnore
@@ -105,6 +105,7 @@ class User : Serializable, UserDetails {
             this._avatarPath = profile.avatar.toString()
         if (profile.passwordEncoded != null)
             this.password = profile.passwordEncoded
+        TODO("not finished")
     }
 
     companion object {

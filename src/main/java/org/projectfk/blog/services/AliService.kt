@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.PropertySource
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 
@@ -57,6 +58,39 @@ open class STSService {
     @Value("\${sts.endpoint}")
     private lateinit var endPoint: String
 
+    @Value("\${sts.durationMinimum}")
+    private lateinit var durationMinimumS: String
+
+    @Value("\${sts.durationMaximum}")
+    private lateinit var durationMaximumS: String
+
+    @Value("\${sts.durationDefault}")
+    private lateinit var durationDefaultS: String
+
+    val durationMinimum: Duration by lazy {
+        try {
+            Duration.ofSeconds(durationMinimumS.toLong())
+        } catch (e: NumberFormatException) {
+            throw IllegalStateException("Config parse error! NumberFormatException on sts.durationMinimum")
+        }
+    }
+
+    val durationMaximum: Duration by lazy {
+        try {
+            Duration.ofSeconds(durationMaximumS.toLong())
+        } catch (e: NumberFormatException) {
+            throw IllegalStateException("Config parse error! NumberFormatException on sts.durationMaximum")
+        }
+    }
+
+    val durationDefault: Duration by lazy {
+        try {
+            Duration.ofSeconds(durationDefaultS.toLong())
+        } catch (e: NumberFormatException) {
+            throw IllegalStateException("Config parse error! NumberFormatException on sts.durationDefault")
+        }
+    }
+
     private val acsClient by lazy {
         val profile = DefaultProfile.getProfile(endPoint, accessKeyID, accessKeySecret)
         DefaultAcsClient(profile)
@@ -65,14 +99,21 @@ open class STSService {
     private val roleSessionNameRegex = Pattern.compile("^[a-zA-Z0-9.@\\-_].{0,32}\$")
 
     @Async
-    open fun requestUploadOSSSTS(name: String, policy: List<STSPolicyStatement>): CompletableFuture<AssumeRoleResponse> {
+    open fun requestUploadSTS(
+            name: String,
+            policy: List<STSPolicyStatement>,
+            duration: Duration = durationDefault
+    ): CompletableFuture<AssumeRoleResponse> {
         if (!roleSessionNameRegex.matcher(name).matches())
             throw IllegalArgumentException("role session name do not match requirement. Input: $name")
+        if (duration > durationMaximum || duration < durationMinimum)
+            throw IllegalArgumentException("Duration do not meet requirement, duration given: ${duration.seconds}")
         val assumeRoleRequest = AssumeRoleRequest()
         assumeRoleRequest.method = MethodType.POST
         assumeRoleRequest.roleArn = roleArn
         assumeRoleRequest.policy = policyGen(policy)
         assumeRoleRequest.roleSessionName = name
+        assumeRoleRequest.durationSeconds = duration.seconds
         return CompletableFuture.supplyAsync { acsClient.getAcsResponse(assumeRoleRequest) }
     }
 
@@ -83,11 +124,10 @@ open class STSService {
             @get:JsonGetter("Action")
             val action: Array<String>,
             @get:JsonGetter("Resource")
-            val resource: Array<String>
-    ) {
-        @get:JsonGetter("Effect")
-        val effect = "Allow"
-    }
+            val resource: Array<String>,
+            @get:JsonGetter("Effect")
+            val effect: String = "Allow"
+    )
 
     private class Policy(
             @get:JsonGetter("Statement")
@@ -102,17 +142,19 @@ open class STSService {
 class OSSSTSService {
 
     @Autowired
-    private lateinit var stsService: STSService
+    lateinit var stsService: STSService
 
     fun obtainSTS(
             name: String,
             action: String = "PutBucket",
-            bucketWithPath: Array<String>
+            bucketWithPath: Array<String>,
+            duration: Duration = stsService.durationDefault
     ): CompletableFuture<AssumeRoleResponse> {
         return stsService
-                .requestUploadOSSSTS(
+                .requestUploadSTS(
                         name,
-                        generatePolicyForOSS(action, bucketWithPath)
+                        generatePolicyForOSS(action, bucketWithPath),
+                        duration
                 )
     }
 

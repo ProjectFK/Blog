@@ -15,7 +15,7 @@ class STSServiceTest {
 
     @Test
     fun requestUploadOSSSTS() {
-        val future = STSService.requestUploadOSSSTS("test",
+        val future = STSService.requestUploadSTS("test",
                 arrayListOf(
                         org.projectfk.blog.services.STSService.STSPolicyStatement(
                                 arrayOf("oss:ListObjects"),

@@ -6,14 +6,12 @@ import org.projectfk.blog.data.StorageRegion
 import org.projectfk.blog.data.StorageRegionRepo
 import org.projectfk.blog.data.User
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-@Service
-class UploadService {
+abstract class UploadService(targetBucket: String, pathPrefix: String) {
 
     @Autowired
     private lateinit var attachmentRepo: AttachmentRepo
@@ -26,28 +24,25 @@ class UploadService {
     @Autowired
     private lateinit var OSSSTSService: OSSSTSService
 
-    @Value("\${upload.targetBucket}")
-    private lateinit var targetBucket: String
-
-    @Value("\${upload.pathPrefix}")
-    private lateinit var pathPrefix: String
-
     private val compiledBucketWithPathPrefix by lazy {
         val value = "$targetBucket/$pathPrefix"
         if (!value.endsWith("/")) "$value/"
         else value
     }
 
-    fun requestNewTokenForUser(user: User): CompletableFuture<AssumeRoleResponse.Credentials> {
-        val region = requestRepo.save(StorageRegion(user))
-        val sts = OSSSTSService.obtainSTS("user@${user.id}-region@${region.name}",
-                bucketWithPath = arrayOf(compiledBucketWithPathPrefix + region))
-        return sts.thenApply {
-            it.credentials
-        }
-    }
+    protected fun requestToken(
+            user: User,
+            region: StorageRegion,
+            duration: Duration = OSSSTSService.stsService.durationDefault
+    ): CompletableFuture<AssumeRoleResponse.Credentials> =
+            OSSSTSService.obtainSTS("user@${user.id}-region@${region.name}",
+                    bucketWithPath = arrayOf(compiledBucketWithPathPrefix + region),
+                    duration = duration
+            ).thenApply {
+                it.credentials
+            }
 
-    fun cleanIfNoUpload(region: StorageRegion): CompletableFuture<Boolean>? {
+    fun cleanIndexIfNoReference(region: StorageRegion): CompletableFuture<Boolean> {
         return CompletableFuture.supplyAsync {
             val dto = requestRepo.findById(region.name)
             if (!dto.isPresent) return@supplyAsync true
@@ -59,6 +54,5 @@ class UploadService {
             true
         }
     }
-
 
 }
