@@ -16,9 +16,6 @@ class StorageRegionService {
     fun requestNewRegion(
             user: User,
             name: String = RandomStringGenerator.getRandom(5)
-    ): StorageRegion {
-        val region = StorageRegion(user, name)
-        return regionRepo.save(region)
-    }
+    ) = regionRepo.save(StorageRegion(user, name))
 
 }

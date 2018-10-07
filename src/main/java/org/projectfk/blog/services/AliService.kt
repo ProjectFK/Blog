@@ -77,17 +77,14 @@ open class STSService {
 
     val durationMaximum: Duration by lazy {
         try {
+            STSService.defaultDuration = Duration.ofSeconds(durationDefaultS.toLong())
+        } catch (e: NumberFormatException) {
+            throw IllegalStateException("Config parse error! NumberFormatException on sts.durationDefault")
+        }
+        try {
             Duration.ofSeconds(durationMaximumS.toLong())
         } catch (e: NumberFormatException) {
             throw IllegalStateException("Config parse error! NumberFormatException on sts.durationMaximum")
-        }
-    }
-
-    val durationDefault: Duration by lazy {
-        try {
-            Duration.ofSeconds(durationDefaultS.toLong())
-        } catch (e: NumberFormatException) {
-            throw IllegalStateException("Config parse error! NumberFormatException on sts.durationDefault")
         }
     }
 
@@ -102,7 +99,7 @@ open class STSService {
     open fun requestUploadSTS(
             name: String,
             policy: List<STSPolicyStatement>,
-            duration: Duration = durationDefault
+            duration: Duration = defaultDuration
     ): CompletableFuture<AssumeRoleResponse> {
         if (!roleSessionNameRegex.matcher(name).matches())
             throw IllegalArgumentException("role session name do not match requirement. Input: $name")
@@ -136,19 +133,23 @@ open class STSService {
         val version = "1"
     }
 
+    companion object {
+        lateinit var defaultDuration: Duration
+    }
+
 }
 
 @Service
 class OSSSTSService {
 
     @Autowired
-    lateinit var stsService: STSService
+    private lateinit var stsService: STSService
 
     fun obtainSTS(
             name: String,
             action: String = "PutBucket",
             bucketWithPath: Array<String>,
-            duration: Duration = stsService.durationDefault
+            duration: Duration = STSService.defaultDuration
     ): CompletableFuture<AssumeRoleResponse> {
         return stsService
                 .requestUploadSTS(

@@ -22,7 +22,7 @@ abstract class UploadService(targetBucket: String, pathPrefix: String) {
     private lateinit var requestRepo: StorageRegionRepo
 
     @Autowired
-    private lateinit var OSSSTSService: OSSSTSService
+    lateinit var OSSSTSService: OSSSTSService
 
     private val compiledBucketWithPathPrefix by lazy {
         val value = "$targetBucket/$pathPrefix"
@@ -33,7 +33,7 @@ abstract class UploadService(targetBucket: String, pathPrefix: String) {
     protected fun requestToken(
             user: User,
             region: StorageRegion,
-            duration: Duration = OSSSTSService.stsService.durationDefault
+            duration: Duration = STSService.defaultDuration
     ): CompletableFuture<AssumeRoleResponse.Credentials> =
             OSSSTSService.obtainSTS("user@${user.id}-region@${region.name}",
                     bucketWithPath = arrayOf(compiledBucketWithPathPrefix + region),
