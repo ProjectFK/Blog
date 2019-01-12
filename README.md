@@ -1,3 +1,5 @@
+# BLOG PROJECT HAS PAUSED
+
 # About
 This is the blog project of ProjectFK.
 
